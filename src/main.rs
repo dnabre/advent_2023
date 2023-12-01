@@ -5,55 +5,57 @@
 #![allow(unused_assignments)]
 /*
     Advent of Code 2023: Day 01
-        part1 answer: 54630
-        part2 answer:
+        part1 answer:   54630
+        part2 answer:   54770
 
  */
 
-// test_input_01 -> 142
-//54788 is too high
-//54762 is too low
-
-
-// part two should be 54770
+const ANSWER: (&str, &str) = ("54630", "54770");
 
 use std::collections::HashMap;
 use std::fs;
+use std::fs::File;
+use std::io::{BufRead, BufReader, BufWriter};
+
 
 fn main() {
     let filename_test = "data/day01/test_input_01.txt";
     let filename_part1 = "data/day01/part1_input.txt";
-    let filename_part2 =  "data/day01/part2_input.txt";
+    let filename_part2 = "data/day01/part2_input.txt";
     let filename_test2 = "data/day01/test_input_02.txt";
     let filename_test3 = "data/day01/test_input_03.txt";
 
-    let answer1:String = part1(filename_part1);
-
-   //  let answer2:String = part2(filename_test3);
-    let answer2:String = part2(filename_part2);
+    let answer1: String = part1(filename_part1);
+    let answer2: String = part2(filename_part2);
 
     println!("Advent of Code, Day 01");
     println!("\t ---------------------------------------------");
     println!("\t part1: {}", answer1);
+    if ANSWER.0 != answer1 {
+        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
+    }
     println!("\t part2: {}", answer2);
+    if ANSWER.1 != answer2 {
+        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
+    }
+
     println!("\t ---------------------------------------------\n\t done")
 }
 
+
+fn file_to_lines(input_file: &str) -> Vec<String> {
+    let file = File::open(input_file).expect(&*format!("error opening file {}", input_file));
+    let bfile = BufReader::new(file);
+    let lines: Vec<String> = bfile.lines().filter_map(|x| x.ok()).collect();
+    return lines;
+}
+
 fn part1(input_file: &str) -> String {
-    let data_raw = fs::read_to_string(input_file).expect(&*format!("error opening file {}", input_file));
-    let lines: Vec<&str> = data_raw.trim().split("\n").collect();
-    let l_num = lines.len();
-
-    println!("read {} lines", l_num);
-    println!();
-
+    let lines = file_to_lines(input_file);
     let mut sum = 0;
 
     for l in lines.iter() {
-
-        let line_answer = solve_line(*l);
-
-   //     println!("{} => {}", l, line_answer);
+        let line_answer = solve_line(l);
         sum += line_answer;
     }
     return sum.to_string();
@@ -61,182 +63,66 @@ fn part1(input_file: &str) -> String {
 
 
 fn part2(input_file: &str) -> String {
-    let data_raw = fs::read_to_string(input_file).expect(&*format!("error opening file {}", input_file));
-    let lines: Vec<&str> = data_raw.trim().split("\n").map(|s| s.trim() ).collect();
-    let l_num = lines.len();
-
-
-
+    let lines = file_to_lines(input_file);
     let mut sum = 0;
 
-    let words: Vec<(&str, &str)> = vec![("one", "1"), ("two", "2"), ("three", "3"), ("four", "4"), ("five", "5"),
-                                        ("six","6"), ("seven","7"), ("eight","8"), ("nine","9")
-    ];
-
-    let i_words:Vec<&str> = words.iter().map(|(a,b)| *a).collect();
-
-  //  println!("i_words: {:?}", i_words);
-
-    let mut new_lines:Vec<String> = Vec::new();
-    let mut sum = 0;
-    let line_number = 926;
-    //for line_number in 0..lines.len()
-    {
-
-        let l = lines[line_number].trim();
-        let (n_line,b_line) = reduce_words(l , &words, &i_words);
-        // let line_value  =solve_line(n_line.as_str());
-        // let line_value2 = solve_line(b_line.as_str());
-        //
-        // let line_value3 = solve_line2(n_line.as_str(), b_line.as_str());
-let line_value = solve_line2(n_line.as_str(), b_line.as_str());
+    for line_number in 0..lines.len() {
+        let l = &lines[line_number];
+        let line_value = solve_line2(&l);
         sum += line_value;
+    }
 
-    println!("{} \t {} \t {}", l, n_line, line_value);
-    println!("{} \t {} \t {}", l, b_line, line_value);
-
-        let (v1,v2) = (solve_line(n_line.as_str()), solve_line(b_line.as_str()));
-        println!("(v1,v2) = ({v1},{v2})");
-
-    //  println!("{}", line_value);
-    //println!("{} -> {}",l,  line_value);
-
-        // println!("---------------------------------------------");
-        // println!(" current line: {} ", l);
-        // println!(" new line: {} ", n_line);
-        // println!(" line result: {} ",line_value );
-
-
-        //new_lines.push(n_line);
-     //   println!("---------------------------------------------");
-   }
-
-
-
-
-    println!("{}  (target is {})", sum, 54770);
-    println!("too high by {}", sum - 54770 );
-
-
-
-    // for l in lines.iter() {
-    //
-    //     let (front,back) = solve_line_part1(*l);
-    //     let line_answer = (front * 10) + back;
-    //     //     println!("{} => {}", l, line_answer);
-    //     sum += line_answer;
-    // }
     return sum.to_string();
 }
 
-fn solve_line2(forward: &str, backword: &str) -> i32 {
-
-    let letters: Vec<char> = backword.chars().collect();
-    let mut first:Option<i32> = None;
-    let mut back:Option<i32> = None;
-
-    for c in letters.iter() {
-
-        if c.is_digit( 10) {
-            let c_v = (*c as i32)  - ('0' as i32);
-            if first.is_none() {
-                first = Some(c_v);
-            }
-            back = Some(c_v);
-        }
-    }
-    let f_back = back.unwrap();
-
-    let letters: Vec<char> = forward.chars().collect();
-    let mut first:Option<i32> = None;
 
 
-    for c in letters.iter() {
-
-        if c.is_digit( 10) {
-            let c_v = (*c as i32)  - ('0' as i32);
-            if first.is_none() {
-                first = Some(c_v);
-            }
-         }
-    }
-
-
-    return (10*first.unwrap())+f_back;
-
-
-}
-
-fn reduce_words (line:&str, words: &Vec<(&str, &str)>, i_words: &Vec<&str>) -> (String, String) {
-    let mut n_string = line.to_string();
-    let mut b_string = line.to_string();
-   println!("reducing {line}");
-    let mut map_start_to_num:HashMap<usize,usize> = HashMap::new();
-    let mut match_spots:Vec<(usize,usize)>  = Vec::new();
-
-    for i in 0..i_words.len() {
-      print!("\t {} ", i_words[i]);
-
-        let f_results = n_string.find(i_words[i]);
-    println!(" {:?}", f_results);
-        match f_results {
-            None => {}
-            Some(x) => {
-                match_spots.push((i+1,x));
-                map_start_to_num.insert(x,i );
-
-            }
-        }
-    }
-   println!("match_spots: {:?}", match_spots);
-  println!("map_start_to_num: {:?}", map_start_to_num);
-
-    for c_i in 0..line.len() {
-       let n = map_start_to_num.get(&c_i);
-       match n {
-           None => {}
-           Some(i) => {
-               let (w,w_n) = words[*i];
-               n_string = n_string.replace(w,w_n);
-             println!("replacing {} with {} to get {}", w, w_n, n_string);
-           }
-       }
-
-    }
-
-    for c_i in (0..line.len()).rev() {
-        let n = map_start_to_num.get(&c_i);
-        match n {
-            None => {}
-            Some(i) => {
-                let (w,w_n) = words[*i];
-                b_string = b_string.replace(w,w_n);
-               println!("replacing {} with {} to get {}", w, w_n, b_string);
-            }
-        }
-    }
-
-
-
-    return (n_string,b_string);
-}
-
-
-fn solve_line(input_line: &str) -> i32 {
+fn solve_line(input_line: &String) -> i32 {
     let letters: Vec<char> = input_line.chars().collect();
-    let mut first:Option<i32> = None;
-    let mut back:Option<i32> = None;
+    let mut first: Option<i32> = None;
+    let mut back: Option<i32> = None;
 
     for c in letters.iter() {
-
-        if c.is_digit( 10) {
-            let c_v = (*c as i32)  - ('0' as i32);
+        if c.is_digit(10) {
+            let c_v = (*c as i32) - ('0' as i32);
             if first.is_none() {
                 first = Some(c_v);
             }
             back = Some(c_v);
         }
     }
+    return (10 * first.unwrap()) + back.unwrap();
+}
 
-    return (10*first.unwrap())+back.unwrap();
+fn solve_line2(input: &String) -> usize {
+    let words = vec![
+        "1", "2", "3", "4", "5", "6", "7", "8", "9",
+        "one", "two", "three", "four", "five", "six", "seven", "eight", "nine"];
+
+    let mut forward_values: Vec<_> = Vec::new();
+    let mut backward_values: Vec<_> = Vec::new();
+
+    for i in 0..words.len() {
+        let p = (i, words[i]);
+        match input.find(p.1).map(|pos| (pos, p.0)) {
+            None => {}
+            Some(ff) => {
+                forward_values.push(ff);
+            }
+        }
+        match input.rfind(p.1).map(|pos| (pos, p.0)) {
+            None => {}
+            Some(bb) => {
+                backward_values.push(bb);
+            }
+        }
+    }
+
+    let f = forward_values.iter().min().unwrap().1 as i32;
+    let b = backward_values.iter().max().unwrap().1 as i32;
+
+    // first for zero-based index
+    let f = f % 9 + 1;
+    let b = b % 9 + 1;
+    return ((f * 10) + b) as usize;
 }
