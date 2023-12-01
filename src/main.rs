@@ -79,23 +79,27 @@ fn part2(input_file: &str) -> String {
 
     let mut new_lines:Vec<String> = Vec::new();
     let mut sum = 0;
+    let line_number = 926;
+    //for line_number in 0..lines.len()
+    {
 
-    for line_number in 0..lines.len() {
         let l = lines[line_number].trim();
         let (n_line,b_line) = reduce_words(l , &words, &i_words);
-        let line_value  =solve_line(n_line.as_str());
-        let line_value2 = solve_line(b_line.as_str());
-
-        let line_value = solve_line2(n_line.as_str(), b_line.as_str());
-
+        // let line_value  =solve_line(n_line.as_str());
+        // let line_value2 = solve_line(b_line.as_str());
+        //
+        // let line_value3 = solve_line2(n_line.as_str(), b_line.as_str());
+let line_value = solve_line2(n_line.as_str(), b_line.as_str());
         sum += line_value;
 
+    println!("{} \t {} \t {}", l, n_line, line_value);
+    println!("{} \t {} \t {}", l, b_line, line_value);
 
-        println!("{} \t {} \t {}", l, n_line, line_value);
-        println!("{} \t {} \t {}", l, b_line, line_value2);
-        //println!("{}", line_value);
-        //println!("{} -> {}",l,  line_value);
+        let (v1,v2) = (solve_line(n_line.as_str()), solve_line(b_line.as_str()));
+        println!("(v1,v2) = ({v1},{v2})");
 
+    //  println!("{}", line_value);
+    //println!("{} -> {}",l,  line_value);
 
         // println!("---------------------------------------------");
         // println!(" current line: {} ", l);
@@ -105,7 +109,7 @@ fn part2(input_file: &str) -> String {
 
         //new_lines.push(n_line);
      //   println!("---------------------------------------------");
-    }
+   }
 
 
 
@@ -145,7 +149,7 @@ fn solve_line2(forward: &str, backword: &str) -> i32 {
 
     let letters: Vec<char> = forward.chars().collect();
     let mut first:Option<i32> = None;
-    let mut back:Option<i32> = None;
+
 
     for c in letters.iter() {
 
@@ -154,8 +158,7 @@ fn solve_line2(forward: &str, backword: &str) -> i32 {
             if first.is_none() {
                 first = Some(c_v);
             }
-            back = Some(c_v);
-        }
+         }
     }
 
 
@@ -167,15 +170,15 @@ fn solve_line2(forward: &str, backword: &str) -> i32 {
 fn reduce_words (line:&str, words: &Vec<(&str, &str)>, i_words: &Vec<&str>) -> (String, String) {
     let mut n_string = line.to_string();
     let mut b_string = line.to_string();
-    println!("reducing {line}");
+   println!("reducing {line}");
     let mut map_start_to_num:HashMap<usize,usize> = HashMap::new();
     let mut match_spots:Vec<(usize,usize)>  = Vec::new();
 
     for i in 0..i_words.len() {
-       print!("\t {} ", i_words[i]);
+      print!("\t {} ", i_words[i]);
 
         let f_results = n_string.find(i_words[i]);
-     println!(" {:?}", f_results);
+    println!(" {:?}", f_results);
         match f_results {
             None => {}
             Some(x) => {
@@ -185,8 +188,8 @@ fn reduce_words (line:&str, words: &Vec<(&str, &str)>, i_words: &Vec<&str>) -> (
             }
         }
     }
-    println!("match_spots: {:?}", match_spots);
-   println!("map_start_to_num: {:?}", map_start_to_num);
+   println!("match_spots: {:?}", match_spots);
+  println!("map_start_to_num: {:?}", map_start_to_num);
 
     for c_i in 0..line.len() {
        let n = map_start_to_num.get(&c_i);
@@ -195,7 +198,7 @@ fn reduce_words (line:&str, words: &Vec<(&str, &str)>, i_words: &Vec<&str>) -> (
            Some(i) => {
                let (w,w_n) = words[*i];
                n_string = n_string.replace(w,w_n);
-              println!("replacing {} with {} to get {}", w, w_n, n_string);
+             println!("replacing {} with {} to get {}", w, w_n, n_string);
            }
        }
 
@@ -208,7 +211,7 @@ fn reduce_words (line:&str, words: &Vec<(&str, &str)>, i_words: &Vec<&str>) -> (
             Some(i) => {
                 let (w,w_n) = words[*i];
                 b_string = b_string.replace(w,w_n);
-                println!("replacing {} with {} to get {}", w, w_n, b_string);
+               println!("replacing {} with {} to get {}", w, w_n, b_string);
             }
         }
     }
