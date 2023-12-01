@@ -1,8 +1,3 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(dead_code)]
-#![allow(unused_assignments)]
 /*
     Advent of Code 2023: Day 01
         part1 answer:   54630
@@ -10,36 +5,35 @@
 
  */
 
+use std::fs::File;
+use std::io::{BufRead, BufReader};
+
 const ANSWER: (&str, &str) = ("54630", "54770");
 
-use std::collections::HashMap;
-use std::fs;
-use std::fs::File;
-use std::io::{BufRead, BufReader, BufWriter};
-
-
 fn main() {
-    let filename_test = "data/day01/test_input_01.txt";
+    let _filename_test  = "data/day01/test_input_01.txt";
+    let _filename_test2 = "data/day01/test_input_02.txt";
+    let _filename_test3 = "data/day01/test_input_03.txt";
+
     let filename_part1 = "data/day01/part1_input.txt";
     let filename_part2 = "data/day01/part2_input.txt";
-    let filename_test2 = "data/day01/test_input_02.txt";
-    let filename_test3 = "data/day01/test_input_03.txt";
 
     let answer1: String = part1(filename_part1);
     let answer2: String = part2(filename_part2);
 
     println!("Advent of Code, Day 01");
-    println!("\t ---------------------------------------------");
-    println!("\t part1: {}", answer1);
+    println!("    ---------------------------------------------");
+    println!("\t Part 1: {}", answer1);
     if ANSWER.0 != answer1 {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
-    println!("\t part2: {}", answer2);
+    println!("\t Part 2: {}", answer2);
     if ANSWER.1 != answer2 {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
     }
 
-    println!("\t ---------------------------------------------\n\t done")
+    println!("    ---------------------------------------------");
+
 }
 
 
@@ -74,7 +68,6 @@ fn part2(input_file: &str) -> String {
 
     return sum.to_string();
 }
-
 
 
 fn solve_line(input_line: &String) -> i32 {
