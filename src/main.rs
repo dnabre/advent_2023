@@ -33,7 +33,7 @@ fn main() {
     let answer2 = part2(_filename_test2);
     let duration2 = start2.elapsed();
 
-    println!("Advent of Code, Day 03");
+    println!("Advent of Code, Day 04");
     println!("    ---------------------------------------------");
     println!("\t Part 1: {} \t\t time: {:?}", answer1, duration1);
     if ANSWER.0 != answer1 {
