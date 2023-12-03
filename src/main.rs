@@ -1,8 +1,8 @@
-// #![allow(unused_variables)]
-// #![allow(unused_imports)]
-// #![allow(unused_mut)]
-// #![allow(dead_code)]
-// #![allow(unused_assignments)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
+#![allow(unused_mut)]
+#![allow(dead_code)]
+#![allow(unused_assignments)]
 
 
 /*
@@ -21,22 +21,19 @@ const ANSWER: (&str, &str) = ("527369", "66363");
 fn main() {
     let _filename_test = "data/day03/test_input_01.txt";
     let _filename_test2 = "data/day03/test_input_02.txt";
+
     let filename_part1 = "data/day03/part1_input.txt";
     let filename_part2 = "data/day03/part2_input.txt";
 
-
-    println!("Advent of Code, Day ");
-    println!("    ---------------------------------------------");
-
-
     let answer1: String = part1(filename_part1);
+    let answer2: String = part2(_filename_test);
 
+    println!("Advent of Code, Day 03");
+    println!("    ---------------------------------------------");
     println!("\t Part 1: {}", answer1);
     if ANSWER.0 != answer1 {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
-
-    let answer2: String = part2(filename_part2);
     println!("\t Part 2: {}", answer2);
     if ANSWER.1 != answer2 {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
@@ -44,7 +41,6 @@ fn main() {
 
     println!("    ---------------------------------------------");
 }
-
 
 fn file_to_lines(input_file: &str) -> Vec<String> {
     let file = File::open(input_file).expect(&*format!("error opening file {}", input_file));
@@ -72,46 +68,36 @@ fn get_neighbor_points(r: i32, c: i32, diag: bool) -> Vec<(i32, i32)> {
 
 
 fn part1(input_file: &str) -> String {
-    println!();
     let lines = file_to_lines(input_file);
 
 
     let rows = lines.len() as i32 + 1;
     let cols = lines[0].len() as i32 + 1;
-    println!("rows: {rows}, cols: {cols}");
 
     let mut grid: HashMap<(i32, i32), char> = HashMap::new();
 
     for r in 0..=rows {
         for c in 0..=cols {
-            grid.insert((r as i32, c as i32), '.');
+            grid.insert((r, c), '.');
         }
     }
     let (rows, cols) = (rows + 1, cols + 1);
 
     let mut r = 1;
-    let mut c;
-    let mut good_points: HashMap<(i32, i32), bool> = HashMap::new();
-
 
     for l in lines {
-        c = 1;
+        let mut c = 1;
         for ch in l.chars() {
             grid.insert((r, c), ch);
-            if ch.is_digit(0) || ch == '.' {
-                good_points.insert((r, c), false);
-            } else {
-                good_points.insert((r, c), true);
-            }
             c += 1;
         }
         r += 1;
     }
 
-    //  print_grid(grid.clone(), rows, cols);
+
     let mut found_nums = Vec::new();
 
-    for  r in 0..rows {
+    for r in 0..rows {
         let mut c = 0;
         while c < cols {
             let ch = grid.get(&(r, c)).unwrap();
@@ -138,20 +124,11 @@ fn part1(input_file: &str) -> String {
             }
         }
     }
-    println!("found {} numbers", found_nums.len());
-
-    let mut is_good;
     let mut good_numbers: Vec<i32> = Vec::new();
-
     for i in 0..found_nums.len() {
-        let (tnum, num_start, length) = found_nums[i];
-
-        //for (num, num_start@(r,c), length) in &found_nums {
-   //     println!("Checking {tnum} @ {:?} {}", num_start, length);
-        is_good = false;
+        let (num, num_start, length) = found_nums[i];
         let (r, c) = num_start;
         'num_check: for cl in c..(c + length) {
-    //        println!("getting neighbors of point: {:?}  (value: {:?}", (r, cl),grid.get(&(r, cl)));
             let neighs = get_neighbor_points(r, cl, true);
             for neigh in neighs {
                 let o_ch = grid.get(&neigh);
@@ -159,15 +136,9 @@ fn part1(input_file: &str) -> String {
                     None => {}
                     Some(ch) => {
                         if ch.is_ascii_digit() || *ch == '.' {
-                            //                    println!("not symbol: {ch} @ {:?}", neigh);
-                            //neighbor isn't symbol
                             continue;
                         } else {
-                            //neighbor is symbol
-              //              println!("\t is good because {:?} is {}", neigh, ch);
-                            good_numbers.push(tnum);
-                            is_good = true;
-
+                            good_numbers.push(num);
                             break 'num_check;
                         }
                     }
@@ -176,32 +147,14 @@ fn part1(input_file: &str) -> String {
         }
     }
 
-    let sum:i32 = good_numbers.iter().sum();
-    println!("flush");
+    let sum: i32 = good_numbers.iter().sum();
     return sum.to_string();
-}
-
-
-fn print_grid(grid: HashMap<(i32, i32), char>, n_rows: i32, n_cols: i32) {
-    for r in 0..n_rows {
-        for c in 0..n_cols {
-            let ch = grid.get(&(r, c));
-            match ch {
-                None => {
-                    println!("error retrieving grid point at ({r},{c})");
-                    return;
-                }
-                Some(ch) => { print!("{ch}"); }
-            }
-        }
-        println!();
-    }
-    println!();
 }
 
 
 fn part2(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
+
 
     return String::new();
 }
