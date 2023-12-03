@@ -1,9 +1,9 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(dead_code)]
-#![allow(unused_assignments)]
-
+// #![allow(unused_variables)]
+// #![allow(unused_imports)]
+// #![allow(unused_mut)]
+// #![allow(dead_code)]
+// #![allow(unused_assignments)]
+//
 
 /*
     Advent of Code 2023: Day 03
@@ -19,6 +19,7 @@ part 2: 73074886
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use std::time::Instant;
 
 const ANSWER: (&str, &str) = ("527369", "73074886");
 
@@ -29,16 +30,21 @@ fn main() {
     let filename_part1 = "data/day03/part1_input.txt";
     let filename_part2 = "data/day03/part2_input.txt";
 
-    let answer1: String = part1(filename_part1);
-    let answer2: String = part2(filename_part2);
+    let start1 = Instant::now();
+    let answer1 = part1(filename_part1);
+    let duration1 = start1.elapsed();
+
+    let start2 = Instant::now();
+    let answer2 = part2(filename_part2);
+    let duration2 = start2.elapsed();
 
     println!("Advent of Code, Day 03");
     println!("    ---------------------------------------------");
-    println!("\t Part 1: {}", answer1);
+    println!("\t Part 1: {} \t\t time: {:?}", answer1, duration1);
     if ANSWER.0 != answer1 {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
-    println!("\t Part 2: {}", answer2);
+    println!("\t Part 2: {} \t\t time: {:?}", answer2, duration2);
     if ANSWER.1 != answer2 {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
     }
