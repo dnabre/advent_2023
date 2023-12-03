@@ -7,6 +7,7 @@
 | Problem |                     | 1 | 2 |
 | --- |---------------------|---|---|
 | [Day 1: Trebuchet?!](https://adventofcode.com/2023/day/1) | string manipulation | * | * |
+| [Day 2: Cube Conundrum](https://adventofcode.com/2023/day/2) | pasring | * | _ |
 
 
-Learning Rust as I go, so this code will likely be messy and non-idiomatic. Not recommended as good examples of the language.
+Still learning Rust as I go, so this code will likely be messy and non-idiomatic. Not recommended as good examples of the language.
