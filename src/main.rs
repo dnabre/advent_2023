@@ -35,20 +35,12 @@ fn main() {
     if ANSWER.0 != answer1 {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
-<<<<<<< HEAD
-    let answer2: String = part2(filename_part2);
-    println!("\t Part 2: {}", answer2);
-    if ANSWER.1 != answer2 {
-        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
-    }
-=======
 
     // let answer2: String = part2(filename_part2);
     // println!("\t Part 2: {}", answer2);
     // if ANSWER.1 != answer2 {
     //     println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
     // }
->>>>>>> 2ea362a (day 3)
 
     println!("    ---------------------------------------------");
 }
@@ -66,11 +58,6 @@ fn part1(input_file: &str) -> String {
     println!();
     let lines = file_to_lines(input_file);
 
-<<<<<<< HEAD
-    return String::new();
-}
-
-=======
 
     let rows= lines.len() as i32 + 1;
     let cols = lines[0].len() as i32 +1;
@@ -178,14 +165,10 @@ fn print_grid(grid: HashMap<(i32, i32), char>, n_rows:i32, n_cols:i32) {
 
 }
 
->>>>>>> 2ea362a (day 3)
+
 fn part2(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
     return String::new();
 }
-<<<<<<< HEAD
-=======
 
-
->>>>>>> 2ea362a (day 3)
