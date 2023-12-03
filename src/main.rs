@@ -8,27 +8,29 @@
 /*
     Advent of Code 2023: Day 03
         part1 answer:   527369
-        part2 answer:
+        part2 answer:   73074886
 
 
 part 2: 72114486 is too low
+part 2: 73074886
+
  */
 
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-const ANSWER: (&str, &str) = ("527369", "72832721");
+const ANSWER: (&str, &str) = ("527369", "73074886");
 
 fn main() {
     let _filename_test = "data/day03/test_input_01.txt";
     let _filename_test2 = "data/day03/test_input_02.txt";
-
+    let _filename_test3 = "data/day03/test_input_03.txt";
     let filename_part1 = "data/day03/part1_input.txt";
     let filename_part2 = "data/day03/part2_input.txt";
 
     let answer1: String = part1(filename_part1);
-    let answer2: String = part2(_filename_test2);
+    let answer2: String = part2(filename_part2);
 
     println!("Advent of Code, Day 03");
     println!("    ---------------------------------------------");
@@ -179,6 +181,7 @@ fn part2(input_file: &str) -> String {
         r += 1;
     }
 
+    let mut number_by_location:HashMap<(i32,i32),i32> = HashMap::new();
 
     let mut found_nums = Vec::new();
 
@@ -201,6 +204,7 @@ fn part2(input_file: &str) -> String {
                         let num: i32 = sb.parse().unwrap();
                         //               println!("Number Found: {num} at {:?} length {}",num_start, sb.len());
                         found_nums.push((num, num_start, sb.len() as i32));
+                        number_by_location.insert(num_start, num);
                         break;
                     }
                 }
@@ -263,29 +267,25 @@ fn part2(input_file: &str) -> String {
             }
         }
     }
-    // let mut total_ratio:i64 = 0;
-    // for g_set in gear_pair_list {
-    //     assert_eq!(2,g_set.len());
-    //     let mut rat:i64 = 1;
-    //     for i in g_set {
-    //         rat = rat * (i as i64);
-    //     }
-    //     total_ratio += rat;
-    // }
-    // println!("total ratio: {}", total_ratio);
+     let mut total_ratio:i32 = 0;
+     for g_set in gear_pair_list {
+         println!("g_set: {:?}", g_set);
+
+         let mut rat:i32 = 1;
+         for loc in g_set {
+             let val = number_by_location.get(&loc).unwrap();
+             rat = rat * val;
+         }
+         total_ratio += rat;
+     }
 
 
 
-    return String::new();
+
+
+    return total_ratio.to_string();
 }
 
-fn product(p0: &HashSet<i32>) -> i32 {
-    let mut rat = 1;
-    for i in p0 {
-        rat = rat * i;
-    }
-    return rat;
-}
 
 fn get_number_from_loc(hit_loc: (i32, i32), grid: &HashMap<(i32, i32), char>, found_numbers: &Vec<(i32, (i32, i32), i32)>) -> HashSet<(i32,i32)> {
     let (h_row, h_col) = hit_loc;
