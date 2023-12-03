@@ -28,7 +28,7 @@ fn main() {
     let filename_part2 = "data/day03/part2_input.txt";
 
     let answer1: String = part1(filename_part1);
-    let answer2: String = part2(filename_part2);
+    let answer2: String = part2(_filename_test2);
 
     println!("Advent of Code, Day 03");
     println!("    ---------------------------------------------");
@@ -224,7 +224,7 @@ fn part2(input_file: &str) -> String {
 
     let gear_locations = gear_locations;
 
-    let mut gear_pair_list:Vec<HashSet<i32>> = Vec::new();
+    let mut gear_pair_list:Vec<HashSet<(i32,i32)>> = Vec::new();
     let mut g1:Option<i32> = None;
     let mut g2:Option<i32> = None;
 
@@ -234,7 +234,7 @@ fn part2(input_file: &str) -> String {
     // question about gear @ 124,67 -> (68,125)
 
     for g_loc in gear_locations {
-        let mut gear_pair:HashSet<i32> = HashSet::with_capacity(2);
+        let mut gear_pair:HashSet<(i32,i32)> = HashSet::with_capacity(2);
      //   println!("gear loc: {:?}", g_loc);
         let (g_r, g_c) = g_loc;
 
@@ -251,10 +251,6 @@ fn part2(input_file: &str) -> String {
                     for i in n {
                         gear_pair.insert(i);
                     }
-                    if g_loc == (68,125) {
-                        println!("gear_pair: {:?}", gear_pair);
-                    }
-
 
                     if gear_pair.len() >= 2 {
                         //println!("Gear @{:?} has number: {:?}", g_loc, gear_pair);
@@ -267,16 +263,16 @@ fn part2(input_file: &str) -> String {
             }
         }
     }
-    let mut total_ratio:i64 = 0;
-    for g_set in gear_pair_list {
-        assert_eq!(2,g_set.len());
-        let mut rat:i64 = 1;
-        for i in g_set {
-            rat = rat * (i as i64);
-        }
-        total_ratio += rat;
-    }
-    println!("total ratio: {}", total_ratio);
+    // let mut total_ratio:i64 = 0;
+    // for g_set in gear_pair_list {
+    //     assert_eq!(2,g_set.len());
+    //     let mut rat:i64 = 1;
+    //     for i in g_set {
+    //         rat = rat * (i as i64);
+    //     }
+    //     total_ratio += rat;
+    // }
+    // println!("total ratio: {}", total_ratio);
 
 
 
@@ -291,10 +287,10 @@ fn product(p0: &HashSet<i32>) -> i32 {
     return rat;
 }
 
-fn get_number_from_loc(hit_loc: (i32, i32), grid: &HashMap<(i32, i32), char>, found_numbers: &Vec<(i32, (i32, i32), i32)>) -> HashSet<i32> {
+fn get_number_from_loc(hit_loc: (i32, i32), grid: &HashMap<(i32, i32), char>, found_numbers: &Vec<(i32, (i32, i32), i32)>) -> HashSet<(i32,i32)> {
     let (h_row, h_col) = hit_loc;
- //   println!("trying to find number that overlaps @{:?}", hit_loc );
-    let mut adj_vals:HashSet<i32> = HashSet::new();
+      println!("trying to find number that overlaps @{:?}", hit_loc );
+    let mut adj_vals:HashSet<(i32,i32)> = HashSet::new();
 
     for fon@(val,start_loc,length) in found_numbers {
   //       println!("\t checking {:?}", fon);
@@ -305,11 +301,9 @@ fn get_number_from_loc(hit_loc: (i32, i32), grid: &HashMap<(i32, i32), char>, fo
         } else {
      //       println!("checking if {} > {h_col} >= {}", (*s_col+*length), s_col);
             if h_col >= *s_col &&  (*s_col + *length) > h_col {
-           if h_row == 68 {
 
-               println!("inserting value {} for {:?}", *val, hit_loc );}
 
-                  adj_vals.insert(*val);
+                  adj_vals.insert(*start_loc);
                   if adj_vals.len() == 2 {
                     return adj_vals;
                 }
