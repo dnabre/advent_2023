@@ -10,13 +10,15 @@
         part1 answer:   527369
         part2 answer:
 
+
+part 2: 72114486 is too low
  */
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 
-const ANSWER: (&str, &str) = ("527369", "66363");
+const ANSWER: (&str, &str) = ("527369", "72832721");
 
 fn main() {
     let _filename_test = "data/day03/test_input_01.txt";
@@ -26,7 +28,7 @@ fn main() {
     let filename_part2 = "data/day03/part2_input.txt";
 
     let answer1: String = part1(filename_part1);
-    let answer2: String = part2(_filename_test);
+    let answer2: String = part2(filename_part2);
 
     println!("Advent of Code, Day 03");
     println!("    ---------------------------------------------");
@@ -154,8 +156,179 @@ fn part1(input_file: &str) -> String {
 
 fn part2(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
+    let rows = lines.len() as i32 + 1;
+    let cols = lines[0].len() as i32 + 1;
+
+    let mut grid: HashMap<(i32, i32), char> = HashMap::new();
+
+    for r in 0..=rows {
+        for c in 0..=cols {
+            grid.insert((r, c), '.');
+        }
+    }
+    let (rows, cols) = (rows + 1, cols + 1);
+
+    let mut r = 1;
+
+    for l in lines {
+        let mut c = 1;
+        for ch in l.chars() {
+            grid.insert((r, c), ch);
+            c += 1;
+        }
+        r += 1;
+    }
+
+
+    let mut found_nums = Vec::new();
+
+    for r in 0..rows {
+        let mut c = 0;
+        while c < cols {
+            let ch = grid.get(&(r, c)).unwrap();
+            if ch.is_ascii_digit() {
+                let num_start = (r, c);
+                let mut sb = String::new();
+                sb.push(*ch);
+                while c < cols {
+                    c += 1;
+                    let ch = grid.get(&(r, c)).unwrap();
+
+                    if ch.is_ascii_digit() {
+                        sb.push(*ch)
+                    } else {
+                        // end of number
+                        let num: i32 = sb.parse().unwrap();
+                        //               println!("Number Found: {num} at {:?} length {}",num_start, sb.len());
+                        found_nums.push((num, num_start, sb.len() as i32));
+                        break;
+                    }
+                }
+            } else {
+                c += 1;
+            }
+        }
+    }
+
+    let mut gear_locations: Vec<(i32, i32)> = Vec::new();
+    for r in 0..rows {
+        for c in 0..cols {
+            let o_ch = grid.get(&(r, c));
+            if let Some(ch) = o_ch {
+                if *ch == '*' {
+                    gear_locations.push((r,c));
+                }
+            }
+        }
+    }
+
+    let gear_locations = gear_locations;
+
+    let mut gear_pair_list:Vec<HashSet<i32>> = Vec::new();
+    let mut g1:Option<i32> = None;
+    let mut g2:Option<i32> = None;
+
+    let mut gears_ratios:Vec<(i32,i32)> = Vec::new();
+    println!("looking for ratios for {} gears", gear_locations.len());
+
+    // question about gear @ 124,67 -> (68,125)
+
+    for g_loc in gear_locations {
+        let mut gear_pair:HashSet<i32> = HashSet::with_capacity(2);
+     //   println!("gear loc: {:?}", g_loc);
+        let (g_r, g_c) = g_loc;
+
+        let neighbors = get_neighbor_points(g_r, g_c, true);
+   //     println!("neighbors: {:?}", neighbors);
+        'neigh_search: for neigh in neighbors {
+
+            let o_ch = grid.get(&neigh);
+            if let Some(ch) = o_ch {
+                if ch.is_ascii_digit() {
+              //      println!("found digit ({ch}) adjacent to gear@{:?} ", g_loc);
+                    let n = get_number_from_loc(neigh, &grid, &found_nums );
+              //      println!("found {} numbers : {:?}", n.len(),n );
+                    for i in n {
+                        gear_pair.insert(i);
+                    }
+                    if g_loc == (68,125) {
+                        println!("gear_pair: {:?}", gear_pair);
+                    }
+
+
+                    if gear_pair.len() >= 2 {
+                        //println!("Gear @{:?} has number: {:?}", g_loc, gear_pair);
+
+               //         println!("prodct: {}, Gear @{:?} has number: {:?}", product(&gear_pair) ,g_loc, gear_pair);
+                        gear_pair_list.push(gear_pair);
+                        break 'neigh_search;
+                    }
+                }
+            }
+        }
+    }
+    let mut total_ratio:i64 = 0;
+    for g_set in gear_pair_list {
+        assert_eq!(2,g_set.len());
+        let mut rat:i64 = 1;
+        for i in g_set {
+            rat = rat * (i as i64);
+        }
+        total_ratio += rat;
+    }
+    println!("total ratio: {}", total_ratio);
+
 
 
     return String::new();
 }
+
+fn product(p0: &HashSet<i32>) -> i32 {
+    let mut rat = 1;
+    for i in p0 {
+        rat = rat * i;
+    }
+    return rat;
+}
+
+fn get_number_from_loc(hit_loc: (i32, i32), grid: &HashMap<(i32, i32), char>, found_numbers: &Vec<(i32, (i32, i32), i32)>) -> HashSet<i32> {
+    let (h_row, h_col) = hit_loc;
+ //   println!("trying to find number that overlaps @{:?}", hit_loc );
+    let mut adj_vals:HashSet<i32> = HashSet::new();
+
+    for fon@(val,start_loc,length) in found_numbers {
+  //       println!("\t checking {:?}", fon);
+        let (s_row,s_col) = start_loc;
+        if h_row != *s_row {
+    //        println!("\t\t wrong row: {}", s_row);
+            continue;
+        } else {
+     //       println!("checking if {} > {h_col} >= {}", (*s_col+*length), s_col);
+            if h_col >= *s_col &&  (*s_col + *length) > h_col {
+           if h_row == 68 {
+
+               println!("inserting value {} for {:?}", *val, hit_loc );}
+
+                  adj_vals.insert(*val);
+                  if adj_vals.len() == 2 {
+                    return adj_vals;
+                }
+            }
+        }
+    }
+    return adj_vals;
+
+}
+
+fn get_locations_in_string(p0: (i32, (i32, i32), i32)) -> Vec<(i32, i32)> {
+  let (num,n_loc,n_len) = p0;
+    let mut locs:Vec<(i32,i32)> = Vec::new();
+    let (r,start_c) = n_loc;
+    for p in 0..n_len {
+        let new_loc = (r, start_c + p );
+        locs.push(new_loc);
+    }
+    return locs;
+}
+
 
