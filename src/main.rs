@@ -34,7 +34,7 @@ fn main() {
     let duration1 = start1.elapsed();
 
     let start2 = Instant::now();
-    let answer2 = part2(_filename_test2);
+    let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
     //println!("Advent of Code, Day 04");
@@ -108,6 +108,20 @@ impl Mapping {
         //     println!("value: not found in ranges, defaulting to : {value}");
         return value;
     }
+    fn inverse(&self, value: i64) -> i64 {
+        for i in 0..self.dest_range.len() {
+            if self.dest_range[i].contains(&value) {
+           //     println!("\tvalue {value} is in dest_range: {:?}", self.dest_range);
+                let offset = value - self.dest_range[i].start;
+            //    println!("\t offset: {offset} returning {} + {}", self.source_range[i].start , offset);
+
+                return self.source_range[i].start + offset;
+            }
+        }
+      //  println!("inverse of {value} is fall through");
+        return value;
+    }
+
     fn map_range(&self, r: Range<i64>) -> Vec<Range<i64>> {
         // convert range r into mapped ranges. resulting ranges may be disjoint, so return vec of them
 
@@ -201,27 +215,30 @@ fn part2(input_file: &str) -> String {
     let (_, seed_strings) = seed_line.split_once(":").unwrap();
     let seeds: Vec<i64> = parse_number_list_whitespace(seed_strings);
 
-    let seed_range_1 = seeds[0]..seeds[0] + seeds[1];
-    let seed_range_2 = seeds[2]..seeds[2] + seeds[3];
+    let seed_pair_chunks = seeds.chunks(2);
 
+    let mut seed_ranges:Vec<Range<i64>> = Vec::new();
 
-    return String::new();
-
-    let mut current_ranges = vec![seed_range_1, seed_range_2];
-
-    let pair_1 = (seed_range_1.start, seed_range_1.end);
-    let pair_2 = (seed_range_2.start, seed_range_2.end);
-
-    println!("seeds: ");
-    println!("\t {:?} with length: {} \t start: {} end: {}", pair_1, pair_1.1 - pair_1.0, seed_range_1.start, seed_range_1.end);
-    println!("\t {:?} with length: {} \t start: {} end: {}", pair_2, pair_2.1 - pair_2.0, seed_range_2.start, seed_range_2.end);
-
+    for pair in seed_pair_chunks {
+        let a = pair[0];
+        let b = pair[1];
+        let r = a..(a+b);
+        seed_ranges.push(r);
+    }
+    //
+    // let irange_a = (seeds[0], seeds[0] + seeds[1]);
+    // let irange_b = (seeds[2], seeds[2] + seeds[3]);
+    //
+    // let range_a = irange_a.0..irange_a.1;
+    // let range_b = irange_b.0..irange_b.1;
+    //
 
     let mut mappings: HashMap<&str, Mapping> = HashMap::new();
     let mut map_vec: Vec<Mapping> = Vec::with_capacity(7);
 
 
     line_queue.pop_front();
+
 
     for i in 0..MAP_NAMES.len() {
         let map_name = MAP_NAMES[i];
@@ -233,38 +250,55 @@ fn part2(input_file: &str) -> String {
             assert_eq!(r.len(), 3);
             n_map.add_range_v(r);
         }
-        //  mappings.insert(map_name, n_map);
+
         map_vec.push(n_map);
         line_queue.pop_front();
     }
 
+    let mut answer:i64 = 0;
     let mut min_loc: i64 = i64::MAX;
-    let mut bumpy_range_list: Vec<Vec<Range<i64>>>;
-    for i in 0..map_vec.len() {
-        bumpy_range_list = Vec::new();
-        let map = &map_vec[i];
-        //      println!("\t using map: {:?}", map);
+    let loop_max:i64 = 1024*1024 * 1024;
+    for l in 0..loop_max {
 
-        //let bumpy_range_list:Vec<Vec<Range<i64>>> = current_ranges.iter().map(|r| map.map_range(r));
-        for r in current_ranges {
-            let partial_range_list = map.map_range(r);
-            bumpy_range_list.push(partial_range_list);
-        }
 
-        current_ranges = Vec::new();
-        for range_list in bumpy_range_list {
-            for r in range_list {
-                current_ranges.push(r);
+            let mut value = l;
+            let mut n_value = l;
+
+            for i in (0..map_vec.len()).rev() {
+                let map = &map_vec[i];
+
+                n_value = map.inverse(value);
+            //    println!("{:30} maps {:15} to {:15} ",map.name, value, n_value );
+
+                value = n_value;
+            }
+
+        for r in &seed_ranges
+        {
+            if r.contains(&value) {
+                println!("seed {value} maps to lowest location {l}");
+                return l.to_string();
             }
         }
+        //println!("loc: {l} reverse maps to seed {}", value);
+        // let saved_seed =value;
+        // if range_a.contains(&value) { println!("seed {value} in range a");}
+        // if range_b.contains(&value) { println!("seed {value} in range b");}
+
+        // let mut value = value;
+        // let mut n_value = value;
+        //
+        // for i in 0..map_vec.len() {
+        //     let map = &map_vec[i];
+        //     n_value = map.map(value);
+        //     value = n_value;
+        // }
+        // println!("\t checking seed: {} maps to loc: {}", saved_seed, value);
+
     }
 
-    println!("location ranges: ");
-    for r in current_ranges {
-        println!("\t {:?}", r);
-        min_loc.min(r.start);
+
+
+
+        return answer.to_string();
     }
-
-
-    return min_loc.to_string();
-}
