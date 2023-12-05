@@ -1,9 +1,3 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(dead_code)]
-#![allow(unused_assignments)]
-
 /*
     Advent of Code 2023: Day 04
         part1 answer:   18653
