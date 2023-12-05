@@ -188,6 +188,8 @@ fn part1(input_file: &str) -> String {
 
      Note: part1 is can be converted to part2 with four range of length 1
 
+    Create class Bucket with lowest,highest value in range.
+    Possibly make new rule that is the identity, so that values will always make some rule
  */
 
 
