@@ -64,6 +64,8 @@ fn parse_number_list_whitespace(number_string: &str) -> Vec<i32> {
 fn part1(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
+    // number in input need 64-bits
+
 
 
     return String::new();
