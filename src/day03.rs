@@ -201,6 +201,25 @@ fn part2(input_file: &str) -> String {
     return total_ratio.to_string();
 }
 
+fn get_number_from_loc(hit_loc: (i32, i32), found_numbers: &Vec<(i32, (i32, i32), i32)>) -> HashSet<(i32, i32)> {
+    let (h_row, h_col) = hit_loc;
+    let mut adj_vals: HashSet<(i32, i32)> = HashSet::new();
+    for (_, start_loc, length) in found_numbers {
+        let (s_row, s_col) = start_loc;
+        if h_row != *s_row {
+            continue;
+        } else {
+            if h_col >= *s_col && (*s_col + *length) > h_col {
+                adj_vals.insert(*start_loc);
+                if adj_vals.len() == 2 {
+                    return adj_vals;
+                }
+            }
+        }
+    }
+    return adj_vals;
+}
+
 fn parse_grid(lines: Vec<String>) -> (HashMap<(i32, i32), char>, i32, i32) {
     let rows = lines.len() as i32 + 1;
     let cols = lines[0].len() as i32 + 1;
@@ -224,24 +243,6 @@ fn parse_grid(lines: Vec<String>) -> (HashMap<(i32, i32), char>, i32, i32) {
 }
 
 
-fn get_number_from_loc(hit_loc: (i32, i32), found_numbers: &Vec<(i32, (i32, i32), i32)>) -> HashSet<(i32, i32)> {
-    let (h_row, h_col) = hit_loc;
-    let mut adj_vals: HashSet<(i32, i32)> = HashSet::new();
-    for (_, start_loc, length) in found_numbers {
-        let (s_row, s_col) = start_loc;
-        if h_row != *s_row {
-            continue;
-        } else {
-            if h_col >= *s_col && (*s_col + *length) > h_col {
-                adj_vals.insert(*start_loc);
-                if adj_vals.len() == 2 {
-                    return adj_vals;
-                }
-            }
-        }
-    }
-    return adj_vals;
-}
 
 
 
