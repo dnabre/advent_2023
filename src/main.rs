@@ -258,7 +258,9 @@ fn part2(input_file: &str) -> String {
     let mut answer:i64 = 0;
     let mut min_loc: i64 = i64::MAX;
     let loop_max:i64 = 1024*1024 * 1024;
-    for l in 0..loop_max {
+    let mut l = 0;
+    while l <= loop_max {
+     l += 14821;
 
 
             let mut value = l;
