@@ -22,7 +22,7 @@ use std::io::ErrorKind::AddrNotAvailable;
 use std::str::FromStr;
 use std::time::Instant;
 
-use poker::{Evaluator, cards, Card, Suit, Rank, EvalClass};
+
 
 const ANSWER: (&str, &str) = ("245794640", "247899149");
 
@@ -83,111 +83,42 @@ fn part1(input_file: &str) -> String {
     let mut hands = Vec::new();
 
     for l in &lines {
-        let (h,n) = l.split_once(" ").unwrap();
-        let nn:i32 = n.parse().unwrap();
-        hands.push((h,nn));
-    }
-    let eval = Evaluator::new();
-
-        let suits:[char;4] =['c','h','s','d',];
-    let mut e_hands = Vec::new();
-    let royal_flush ="Ah Kh Qh Jh Th";
-    let high_hand: HashSet<Card> = cards!(royal_flush).try_collect().expect("couldn't parse royal flush");
-
-    let mut hand_prob= None;
-    for i in 0..hands.len() {
-
-        let mut cards: HashSet<Card> = HashSet::new();
-        let (h,n) = hands[i];
-      'card_loop:  for c in h.chars() {
-            let mut suit_index = 0;
-            let mut cd = Card::try_from_chars(c, suits[suit_index]).unwrap();
-            while cards.contains(&cd) {
-                suit_index += 1;
-                if suit_index >= 4 {
-                    println!("hand {i}");
-                    println!("\t input hand: {h}");
-                    println!("\t suit_index: {suit_index} is out of range");
-                    println!("\t trying to insert card: {}", cd);
-                    println!("\t hand: {:?}", cards);
-
-                   // cards = HashSet::from_iter(high_hand.iter()).collect();
-                    cards = high_hand.clone();
-                    break 'card_loop;
-                }
-                cd = Card::try_from_chars(c, suits[suit_index]).unwrap();
-
-            }
-            suit_index =0;
-            cards.insert(cd);
-        }
-        let v_card: Vec<Card> = cards.iter().map(|c| *c).collect();
-        let e = eval.evaluate(v_card).unwrap();
-
-        if e.is_straight_flush() {
-            hand_prob = Some((i,h,n,e.clone()));
-        } else {
-            e_hands.push((i, h, n, e.clone()));
-        }
-  //      println!("{:?} => {}", cards, e);
+        let (h, n) = l.split_once(" ").unwrap();
+        let nn: i32 = n.parse().unwrap();
+        hands.push((h, nn));
     }
 
-    e_hands.sort_by_key(|(_,_,_,e)| e.clone());
+    //   (orig hand number, cards as string, big, evaluation number)
 
-    let mut answer = 0;
-    for i in 0..e_hands.len() {
-        let hand_number = (i+2) as i32;
-        let (i,cs,bid,h) = e_hands[i];
-        if h.is_royal_flush() {
-            println!("royal flush in place of {}", cs);
-        }
-        let hand_win = hand_number * bid;
-        answer += hand_win;
-        println!("Rank: {} \t Hand {} \t bid: {} \t result: {}   \t {} \t {}", hand_number,i, bid, hand_win, cs,h.to_string());
-    }
+    //  e_hands.sort_by_key(|(_,_,_,e)| e.clone());
 
-
-
-    if answer > ANSWER.0.parse().unwrap() {
-        let diff = answer - ANSWER.0.parse::<i32>().unwrap();
-        println!("answer is high by : {}", diff);
-        for i in 0..e_hands.len() {
-            let (i,h,b,e) = e_hands[i];
-            if b % diff == 0 || b == diff{
-                println!("this hands appears to be issue, Hand #{} {}", i, h);
-            }
-        }
-    }
-    println!("\n\n");
-
-    if let Some(hb) = hand_prob {
-        let hand_number = 1;
-        let (i, cs, bid, h) = hb;
-        if h.is_royal_flush() {
-            println!("royal flush in place of {}", cs);
-        }
-        let hand_win = hand_number * bid;
+    // let mut answer = 0;
+    // for i in 0..e_hands.len() {
+    //     let hand_number = (i+2) as i32;
+    //     let (i,cs,bid,h) = e_hands[i];
+    //     if h.is_royal_flush() {
+    //         println!("royal flush in place of {}", cs);
+    //     }
+    //     let hand_win = hand_number * bid;
+    //     answer += hand_win;
+    //     println!("Rank: {} \t Hand {} \t bid: {} \t result: {}   \t {} \t {}", hand_number,i, bid, hand_win, cs,h.to_string());
+    // }
 
 
-        println!("Rank: {} \t Hand {} \t bid: {} \t result: {}   \t {} \t {}", hand_number,i, bid, hand_win, cs,h.to_string());
+    // if answer > ANSWER.0.parse().unwrap() {
+    //     let diff = answer - ANSWER.0.parse::<i32>().unwrap();
+    //     println!("answer is high by : {}", diff);
+    //     for i in 0..e_hands.len() {
+    //         let (i,h,b,e) = e_hands[i];
+    //         if b % diff == 0 || b == diff{
+    //             println!("this hands appears to be issue, Hand #{} {}", i, h);
+    //         }
+    //     }
+    // }
+    // println!("\n\n");
 
-    }
 
-println!("\n\n");
-
-
-    if answer > ANSWER.0.parse().unwrap() {
-        let diff = answer - ANSWER.0.parse::<i32>().unwrap();
-        println!("answer is high by : {}", diff);
-        for i in 0..e_hands.len() {
-            let (i,h,b,e) = e_hands[i];
-            if b % diff == 0 || b == diff{
-                println!("this hands appears to be issue, Hand #{} {}", i, h);
-            }
-        }
-    }
-
-    return answer.to_string();
+    return String::new();
 }
 
 /*
