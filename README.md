@@ -11,6 +11,7 @@
 | [Day 3: Gear Ratios](https://adventofcode.com/2023/day/3)                      | grid search         | * | * |
 | [Day 4: Scratchcards ](https://adventofcode.com/2023/day/4)                    | recursive count     | * | * |
 | [Day 5: If You Give A Seed A Fertilizer ](https://adventofcode.com/2023/day/5) | ranges conversion   | * | * |
-| [Day 6: ](https://adventofcode.com/2023/day/6)                                 |    | _ | _ |
+| [Day 6: Wait For It ](https://adventofcode.com/2023/day/6)                     | quadratic math      | * | * |
+| [Day 7: Camel Cards ](https://adventofcode.com/2023/day/7)                     |                     | _ | _ |
 
 Still learning Rust as I go, so this code will likely be messy and non-idiomatic. Not recommended as good examples of the language.
