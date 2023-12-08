@@ -1,47 +1,34 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(dead_code)]
-#![allow(unused_assignments)]
-#![allow(unreachable_code)]
-
 /*
-    Advent of Code 2023: Day 07
-        part1 answer:
-        part2 answer:
-
- part1: 248455100  - too high
-
+    Advent of Code 2023: Day 06
+        part1 answer:   1108800
+        part2 answer:   36919753
  */
 
 
-use std::collections::HashSet;
+
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use std::io::ErrorKind::AddrNotAvailable;
 use std::str::FromStr;
 use std::time::Instant;
 
-
-
-const ANSWER: (&str, &str) = ("245794640", "247899149");
+const ANSWER: (&str, &str) = ("1108800", "36919753");
 
 fn main() {
-    let _filename_test = "data/day07/test_input_01.txt";
-    let _filename_test2 = "data/day07/test_input_02.txt";
+    let _filename_test = "data/day06/test_input_01.txt";
+    let _filename_test2 = "data/day06/test_input_02.txt";
 
-    let filename_part1 = "data/day07/part1_input.txt";
-    let filename_part2 = "data/day07/part2_input.txt";
+    let filename_part1 = "data/day06/part1_input.txt";
+    let filename_part2 = "data/day06/part2_input.txt";
 
     let start1 = Instant::now();
     let answer1 = part1(filename_part1);
     let duration1 = start1.elapsed();
 
     let start2 = Instant::now();
-    let answer2 = part2(_filename_test2);
+    let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
-    // println!("Advent of Code, Day 07");
+    println!("Advent of Code, Day 06");
     println!("    ---------------------------------------------");
 
     println!("\t Part 1: {:14} time: {:?}", answer1, duration1);
@@ -49,10 +36,10 @@ fn main() {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
 
-    // println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
-    // if ANSWER.1 != answer2 {
-    //     println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
-    // }
+    println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
+    if ANSWER.1 != answer2 {
+        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
+    }
     println!("    ---------------------------------------------");
 }
 
@@ -75,62 +62,71 @@ fn parse_number_list_whitespace<T: FromStr>(number_string: &str) -> Vec<T> {
 }
 
 
-
-
-
 fn part1(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
-    let mut hands = Vec::new();
-
-    for l in &lines {
-        let (h, n) = l.split_once(" ").unwrap();
-        let nn: i32 = n.parse().unwrap();
-        hands.push((h, nn));
+    let (time_v, dist_v): (Vec<i64>, Vec<i64>) = parse_input(lines);
+    let mut product: i64 = 1;
+    for i in 0..time_v.len() {
+        let (t, d) = (time_v[i], dist_v[i]);
+        let n = find_time_to_win(t as f64, d as f64);
+        let r = (n.1 - n.0) + 1;
+        product = product * r;
+        //      println!(" {i}:\t {:?} \t r: {r}", n);
     }
-
-    //   (orig hand number, cards as string, big, evaluation number)
-
-    //  e_hands.sort_by_key(|(_,_,_,e)| e.clone());
-
-    // let mut answer = 0;
-    // for i in 0..e_hands.len() {
-    //     let hand_number = (i+2) as i32;
-    //     let (i,cs,bid,h) = e_hands[i];
-    //     if h.is_royal_flush() {
-    //         println!("royal flush in place of {}", cs);
-    //     }
-    //     let hand_win = hand_number * bid;
-    //     answer += hand_win;
-    //     println!("Rank: {} \t Hand {} \t bid: {} \t result: {}   \t {} \t {}", hand_number,i, bid, hand_win, cs,h.to_string());
-    // }
-
-
-    // if answer > ANSWER.0.parse().unwrap() {
-    //     let diff = answer - ANSWER.0.parse::<i32>().unwrap();
-    //     println!("answer is high by : {}", diff);
-    //     for i in 0..e_hands.len() {
-    //         let (i,h,b,e) = e_hands[i];
-    //         if b % diff == 0 || b == diff{
-    //             println!("this hands appears to be issue, Hand #{} {}", i, h);
-    //         }
-    //     }
-    // }
-    // println!("\n\n");
-
-
-    return String::new();
+    return product.to_string();
 }
-
-/*
-    248,099,169
-    245,794,640
-
- */
-
 
 fn part2(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
-
-    return String::new();
+    let (time_v, dist_v): (Vec<i64>, Vec<i64>) = parse_input2(lines);
+    let mut product: i64 = 1;
+    for i in 0..time_v.len() {
+        let (t, d) = (time_v[i], dist_v[i]);
+        let n = find_time_to_win(t as f64, d as f64);
+        let r = (n.1 - n.0) + 1;
+        product = product * r;
+    }
+    return product.to_string();
 }
 
+fn find_time_to_win(race_time: f64, best_distance: f64) -> (i64, i64) {
+    let determ = ((race_time * race_time) - (4.0 * best_distance)).sqrt();
+    let mut a = (-race_time + determ) / -2.0;
+    let mut b = (-race_time - determ) / -2.0;
+    if a.fract() == 0.0 {
+        a += 1.0;
+    }
+    if b.fract() == 0.0 {
+        b -= 1.0
+    }
+    return (a.ceil() as i64, b.floor() as i64);
+}
+
+fn parse_input(lines: Vec<String>) -> (Vec<i64>, Vec<i64>) {
+    let (_, time_string) = lines[0].trim().split_once(":").unwrap();
+    let (_, dist_string) = lines[1].trim().split_once(":").unwrap();
+    let times = parse_number_list_whitespace(time_string.trim());
+    let distances = parse_number_list_whitespace(dist_string.trim());
+    return (times, distances);
+}
+
+fn parse_input2(lines: Vec<String>) -> (Vec<i64>, Vec<i64>) {
+    let (_, time_string) = lines[0].trim().split_once(":").unwrap();
+    let (_, dist_string) = lines[1].trim().split_once(":").unwrap();
+
+    let times: Vec<i64> = parse_number_list_whitespace(time_string.trim());
+    let mut sb = String::new();
+    for n in times {
+        sb.push_str(n.to_string().as_str());
+    }
+    let f_time: i64 = sb.parse().unwrap();
+
+    let distances: Vec<i64> = parse_number_list_whitespace(dist_string.trim());
+    let mut sb = String::new();
+    for n in distances {
+        sb.push_str(n.to_string().as_str());
+    }
+    let d_time: i64 = sb.parse().unwrap();
+
+    return (vec!(f_time), vec!(d_time));
+}
