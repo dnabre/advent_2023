@@ -285,6 +285,28 @@ fn part1(input_file: &str) -> String {
 fn part2(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
+    print!("Card Mapping   : ");
+    for i in (1..CARD_VALUES_2.len()).rev() {
+        let ch = CARD_VALUES_2[i];
+        print!(" {ch}:{i:2},")
+    }
+    println!(" {}:{}", CARD_VALUES[0], 0);
+
+    let mut char_to_index: HashMap<char, usize> = HashMap::with_capacity(CARD_VALUES.len());
+    for i in 0..CARD_VALUES_2.len() {
+        char_to_index.insert(CARD_VALUES_2[i], i);
+    }
+    char_to_index.shrink_to_fit();
+
+    print!("Reverse Mapping: ");
+    for i in 0..(CARD_VALUES_2.len()) {
+        let ch = CARD_VALUES_2[i];
+        let m_i = char_to_index[&ch];
+        print!(" {ch}:{m_i:2},")
+    }
+
+    println!();
+
     return String::new();
 }
 
