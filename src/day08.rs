@@ -1,10 +1,3 @@
-// #![allow(unused_variables)]
-// #![allow(unused_imports)]
-// #![allow(unused_mut)]
-// #![allow(dead_code)]
-// #![allow(unused_assignments)]
-// #![allow(unreachable_code)]
-
 /*
     Advent of Code 2023: Day 08
         part1 answer:   23147
@@ -106,7 +99,6 @@ fn part2(input_file: &str) -> String {
 
     let choices: Vec<char> = lines[0].chars().collect();
     let ch_list_length = choices.len();
-
 
     let mut end_steps: Vec<usize> = Vec::new();
     for i in 0..start_points.len() {
