@@ -8,10 +8,7 @@
 /*
     Advent of Code 2023: Day 07
         part1 answer:   245794640
-        part2 answer:
-
-
-part2 -> 247224256 is too low
+        part2 answer:   247899149
 
  */
 
@@ -288,9 +285,9 @@ fn part2(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
 
-    let mut char_to_index: HashMap<char, usize> = HashMap::with_capacity(CARD_VALUES.len());
-    for i in 0..CARD_VALUES.len() {
-        char_to_index.insert(CARD_VALUES[i], i);
+    let mut char_to_index: HashMap<char, usize> = HashMap::with_capacity(CARD_VALUES_2.len());
+    for i in 0..CARD_VALUES_2.len() {
+        char_to_index.insert(CARD_VALUES_2[i], i);
     }
     char_to_index.shrink_to_fit();
     let char_to_index = char_to_index;
@@ -300,11 +297,13 @@ fn part2(input_file: &str) -> String {
     let mut hands: Vec<[usize; 5]> = Vec::new();
     //let l = lines[0].clone();
     print!("Card Mapping: ");
-    for i in (1..CARD_VALUES.len()).rev() {
-        let ch = CARD_VALUES[i];
+    for i in (1..CARD_VALUES_2.len()).rev() {
+        let ch = CARD_VALUES_2[i];
         print!(" {ch}:{i},")
     }
-    println!(" {}:{}", CARD_VALUES[0], 0);
+    println!(" {}:{}", CARD_VALUES_2[0], 0);
+
+    let joker_index =0;
     for l in lines
     {
         //   print!("{}    ", l);
@@ -325,7 +324,7 @@ fn part2(input_file: &str) -> String {
         }
 
         let hand_max = counts.iter().max().unwrap();
-        let joker_index = *char_to_index.get(&'J').unwrap();
+     //   let joker_index = *char_to_index.get(&'J').unwrap();
         let joker_count = counts[joker_index];
 
      //   println!("joker count: {}", joker_count);
@@ -339,10 +338,11 @@ fn part2(input_file: &str) -> String {
                         break;
                     }
                 }
-                if k!=joker_index && joker_count > 1 {
-                    (Score::FiveOfKind(k), StrengthType::FiveOfAKind)
-                } else {
+                if joker_count == 0
+                {
                     (Score::FourOfKind(k), StrengthType::FourOfAKind)
+                } else {
+                    (Score::FiveOfKind(k), StrengthType::FiveOfAKind)
                 }
             }
             &3 => {
@@ -418,6 +418,7 @@ fn part2(input_file: &str) -> String {
                         }
                     }
                 }
+
                 if b.is_none() {
                     let ch = a.unwrap();
                     if joker_count == 0 {
@@ -454,7 +455,20 @@ fn part2(input_file: &str) -> String {
                         break;
                     }
                 }
-                (Score::HighCard(k),StrengthType::HighCard)
+                if bid == 846 {
+                    println!("{} count:{joker_count} index: {joker_index}", l);
+                }
+                if joker_count==0 {
+                    if bid == 846 {
+                    println!("\tgoing highcard");}
+                    (Score::HighCard(k), StrengthType::HighCard)
+                } else {
+                    if bid == 846 {
+                        println!("\tgoing pair");
+                    }
+                    (Score::OnePair(k), StrengthType::OnePair)
+                }
+
             }
             _ => {
                 println!    ("unable to score hand: {:?} with max {}", hand, hand_max);
