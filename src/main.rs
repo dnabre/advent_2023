@@ -74,6 +74,7 @@ fn parse_number_list_whitespace<T: FromStr>(number_string: &str) -> Vec<T> {
 fn part1(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
+
     return String::new();
 }
 
