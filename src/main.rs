@@ -10,6 +10,9 @@
         part1 answer:   245794640
         part2 answer:
 
+
+part2 -> 247224256 is too low
+
  */
 
 
@@ -36,7 +39,7 @@ fn main() {
     let duration1 = start1.elapsed();
 
     let start2 = Instant::now();
-    let answer2 = part2(_filename_test2);
+    let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
     // println!("Advent of Code, Day 07");
@@ -47,10 +50,10 @@ fn main() {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
 
-    // println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
-    // if ANSWER.1 != answer2 {
-    //     println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
-    // }
+    println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
+    if ANSWER.1 != answer2 {
+        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
+    }
     println!("    ---------------------------------------------");
 }
 
@@ -281,32 +284,212 @@ fn part1(input_file: &str) -> String {
     return answer.to_string()
 }
 
-
 fn part2(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
-    print!("Card Mapping   : ");
-    for i in (1..CARD_VALUES_2.len()).rev() {
-        let ch = CARD_VALUES_2[i];
-        print!(" {ch}:{i:2},")
-    }
-    println!(" {}:{}", CARD_VALUES[0], 0);
 
     let mut char_to_index: HashMap<char, usize> = HashMap::with_capacity(CARD_VALUES.len());
-    for i in 0..CARD_VALUES_2.len() {
-        char_to_index.insert(CARD_VALUES_2[i], i);
+    for i in 0..CARD_VALUES.len() {
+        char_to_index.insert(CARD_VALUES[i], i);
     }
     char_to_index.shrink_to_fit();
-
-    print!("Reverse Mapping: ");
-    for i in 0..(CARD_VALUES_2.len()) {
-        let ch = CARD_VALUES_2[i];
-        let m_i = char_to_index[&ch];
-        print!(" {ch}:{m_i:2},")
+    let char_to_index = char_to_index;
+    let mut scored_hands: Vec<(Score, usize)> = Vec::new();
+    let mut str_hands:Vec<
+        (StrengthType,[usize;5],usize)> = Vec::new();
+    let mut hands: Vec<[usize; 5]> = Vec::new();
+    //let l = lines[0].clone();
+    print!("Card Mapping: ");
+    for i in (1..CARD_VALUES.len()).rev() {
+        let ch = CARD_VALUES[i];
+        print!(" {ch}:{i},")
     }
+    println!(" {}:{}", CARD_VALUES[0], 0);
+    for l in lines
+    {
+        //   print!("{}    ", l);
 
-    println!();
+        let (chand, cbid) = l.split_once(" ").unwrap();
+        let bid: usize = cbid.parse().unwrap();
 
-    return String::new();
+
+        let mut counts: [usize; NUM_CARDS] = [0; NUM_CARDS];
+        let mut hand: [usize; 5] = [0, 0, 0, 0, 0];
+        let char_array: Vec<_> = chand.chars().collect();
+        for i in 0..HAND_SIZE {
+            let c = char_array[i];
+            let count_i: usize = char_to_index[&c];
+            counts[count_i] += 1;
+            hand[i] = count_i;
+
+        }
+
+        let hand_max = counts.iter().max().unwrap();
+        let joker_index = *char_to_index.get(&'J').unwrap();
+        let joker_count = counts[joker_index];
+
+     //   println!("joker count: {}", joker_count);
+        let (score,str):(Score,StrengthType) = match hand_max {
+            &5 => { (Score::FiveOfKind(hand[0]),StrengthType::FiveOfAKind) },
+            &4 => {
+                let mut k:usize = 0;
+                for i in 0..counts.len() {
+                    if counts[i] == 4 {
+                        k = i;
+                        break;
+                    }
+                }
+                if k!=joker_index && joker_count > 1 {
+                    (Score::FiveOfKind(k), StrengthType::FiveOfAKind)
+                } else {
+                    (Score::FourOfKind(k), StrengthType::FourOfAKind)
+                }
+            }
+            &3 => {
+
+                let mut three:Option<usize> = None;
+                let mut two:Option<usize> = None;
+                for i in 0..counts.len() {
+                    if counts[i] == 3 {
+                        three = Some(i);
+                        if two.is_some() {
+                            break;
+                        }
+                    }
+                    if counts[i] == 2 {
+                        two = Some(i);
+                        if three.is_some() {
+                            break;
+                        }
+                    }
+                }
+                if two.is_none() {
+                    if joker_count == 0 {
+                        (Score::ThreeOfKind(three.unwrap()), StrengthType::ThreeOfAKind)
+                    } else {
+                        if three.unwrap() != joker_index {
+                            if joker_count == 1 {
+                                (Score::FourOfKind(three.unwrap()),StrengthType::FourOfAKind)
+                            } else {
+                                assert_eq!(joker_count,2);
+                                (Score::FiveOfKind(three.unwrap()), StrengthType::FiveOfAKind)
+                            }
+                        }       else {
+                            (Score::FourOfKind(three.unwrap()), StrengthType::FourOfAKind)
+                        }
+                    }
+
+                } else {
+                    assert_eq!(true, three.is_some());
+                    let l3 = three.unwrap();
+                    let l2 = two.unwrap();
+
+                    if joker_count ==0 {
+                        (Score::FullHouse(three.unwrap(), two.unwrap()), StrengthType::FullHouse)
+                    } else if l2==joker_index {
+                        (Score::FiveOfKind(l3), StrengthType::FiveOfAKind)
+                    } else {
+                    //if l3==joker_index {
+                        (Score::FiveOfKind(l2), StrengthType::FiveOfAKind)
+                    }
+                }
+            }
+            &2 => {
+                let mut a:Option<usize> = None;
+                let mut b:Option<usize> = None;
+                for i in 0..counts.len() {
+                    if counts[i] == 2 {
+                        (a,b) = match (a,b) {
+                            (None,None) => { (Some(i), None)}
+                            (Some(x), None)=> {
+                                //(a,b) = (Some(x), Some(i));
+                                let n_a = x.max(i);
+                                let n_b = x.min(i);
+                                (a,b) = (Some(n_a), Some(n_b));
+
+                                break;
+                            }
+                            (Some(a), Some(b)) => {
+                                println!("found a third pair! Pair({a}), Pair({b}), Pair({i} ");
+                                return String::new();
+                            }
+                            _ => {println!("no pairs found with hand_max = {hand_max}, in hand: {:?}",hand);
+                                return String::new();}
+                        }
+                    }
+                }
+                if b.is_none() {
+                    let ch = a.unwrap();
+                    if joker_count == 0 {
+                        (Score::OnePair(ch), StrengthType::OnePair)
+                    } else {
+                        (Score::ThreeOfKind(ch), StrengthType::ThreeOfAKind)
+                    }
+                } else {
+                    let aa = a.unwrap();
+                    let bb = b.unwrap();
+                    if joker_count == 0 {
+                        (Score::TwoPair(aa, bb), StrengthType::TwoPair)
+                    } else {
+                        if aa==joker_index {
+                            (Score::FourOfKind(bb), StrengthType::FourOfAKind)
+                        } else if bb==joker_index {
+                            (Score::FourOfKind(aa), StrengthType::FourOfAKind)
+                        } else {
+                            //>0 jokers, neither pair is J
+                            // 1 joker => 2 pair -> FullHouse
+                            // 2 jokers -> it would be one of the pairs
+                            let hi = aa.max(bb);
+                            let lo = aa.min(bb);
+                            (Score::FullHouse(hi, lo), StrengthType::FullHouse)
+                        }
+                    }
+                }
+            }
+            &1 => { //High card
+                let mut k:usize =0;
+                for i in (0..counts.len()).rev() {
+                    if counts[i] == 1 {
+                        k = i;
+                        break;
+                    }
+                }
+                (Score::HighCard(k),StrengthType::HighCard)
+            }
+            _ => {
+                println!    ("unable to score hand: {:?} with max {}", hand, hand_max);
+                return String::new();
+            }
+        };
+
+
+      //   println!("\t hand: {},{:?},{bid} \t scored to {:?}\t strength: {:?}", chand,hand, score, str );
+
+
+        hands.push(hand);
+        scored_hands.push((score,bid));
+        str_hands.push((str, hand,bid));
+    }
+    //   println!("{:?}", str_hands);
+
+    str_hands.sort();
+for i in 0..str_hands.len() {
+    let h = str_hands[i].1;
+    for j in 0..5 {
+        print!("{}", CARD_VALUES_2[h[j]]);
+    }
+    println!("\t {i:4}: {:?}", str_hands[i]);
 }
 
+    //  println!("{:?}", str_hands);
+
+    let mut answer:usize = 0;
+    for i in 1..=str_hands.len() {
+        let q@(_,_,bid) = str_hands[i-1];
+//println!("{bid} * {i} = {}", bid * i);
+        answer += bid * i;
+    }
+
+
+    return answer.to_string()
+}
