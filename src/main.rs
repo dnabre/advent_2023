@@ -16,9 +16,12 @@ use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
-use core::num;
 use std::str::FromStr;
 use std::time::Instant;
+
+
+
+
 
 const ANSWER: (&str, &str) = ("23147", "22289513667691");
 
@@ -132,15 +135,15 @@ fn part2(input_file: &str) -> String {
     println!("end points  : {:?}", end_points);
 
     let choices:Vec<char> = lines[0].chars().collect();
-    let ch_list_length = choices.len() as u64;
-    let mut step:u64 =0;
+    let ch_list_length = choices.len() as usize;
+    let mut step:usize =0;
     println!("step {:2}: starting at  {:?}",
              step, start_points);
 
-    let mut visited:HashSet<(&str, u64)> = HashSet::new();
-    let mut steps_with_repeats:HashSet<u64> = HashSet::new();
+    let mut visited:HashSet<(&str, usize)> = HashSet::new();
+    let mut steps_with_repeats:HashSet<usize> = HashSet::new();
 
-    let mut end_steps:Vec<u64> = Vec::new();
+    let mut end_steps:Vec<usize> = Vec::new();
     for i in 0..start_points.len() {
         step =0;
         let mut current = start_points[i];
@@ -163,7 +166,7 @@ fn part2(input_file: &str) -> String {
     }
 
 
-    let answer = lcm(end_steps.as_slice());
+    let answer = advent_2023::lcm(end_steps.as_slice());
 
 
     return answer.to_string();
@@ -179,17 +182,3 @@ fn parse_input(line:&String) -> (&str,(&str,&str)) {
 
 
 
-fn lcm(nums: &[u64]) -> u64 {
-    if nums.len() == 1 {
-        return nums[0];
-    }
-    let a = nums[0];
-    let b = lcm(&nums[1..]);
-    a * b / gcd_of_two_numbers(a, b)
-}
-fn gcd_of_two_numbers(a: u64, b: u64) -> u64 {
-    if b == 0 {
-        return a;
-    }
-    gcd_of_two_numbers(b, a % b)
-}
