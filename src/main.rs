@@ -7,7 +7,7 @@
 
 /*
     Advent of Code 2023: Day 08
-        part1 answer:
+        part1 answer:   23147
         part2 answer:
 
  */
@@ -19,17 +19,18 @@ use std::io::{BufRead, BufReader};
 use std::str::FromStr;
 use std::time::Instant;
 
-const ANSWER: (&str, &str) = ("245794640", "247899149");
+const ANSWER: (&str, &str) = ("23147", "247899149");
 
 fn main() {
     let _filename_test = "data/day08/test_input_01.txt";
     let _filename_test2 = "data/day08/test_input_02.txt";
+    let _filename_test3 = "data/day08/test_input_03.txt";
 
     let filename_part1 = "data/day08/part1_input.txt";
     let filename_part2 = "data/day08/part2_input.txt";
 
     let start1 = Instant::now();
-    let answer1 = part1(_filename_test);
+    let answer1 = part1(filename_part1);
     let duration1 = start1.elapsed();
 
     let start2 = Instant::now();
@@ -73,26 +74,40 @@ fn parse_number_list_whitespace<T: FromStr>(number_string: &str) -> Vec<T> {
 fn part1(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
-    let choices:Vec<char> = lines[0].chars().collect();
-    let mut step =0;
+    let mut graph:HashMap<&str,(&str,&str)> = HashMap::new();
+
     for i in 2..lines.len() {
         let ll = &lines[i];
-        println!("{}", ll);
-        let (start, options) = ll.split_once("=").unwrap();
-        println!("start: {}", start);
-        //println!("options: {}", options);
-        let (sleft, sright) = options.split_once(",").unwrap();
-        let sleft = &(sleft.trim())[1..];
-        let sright = &(sright.trim())[..3];
-        println!("left: |{}|, right: |{}|", sleft, sright);
+        let (start, (left,right)) = parse_input(ll);
+        graph.insert(start, (left,right));
     }
-    return String::new();
+
+    let choices:Vec<char> = lines[0].chars().collect();
+    let ch_list_length = choices.len();
+    let mut step =0;
+
+    let mut current = "AAA";
+    loop {
+        let (l,r) = graph[&current];
+        let ch = choices[step%ch_list_length];
+        if ch=='L' {
+            current = l;
+        } else {
+            current = r;
+        }
+        step += 1;
+        if current=="ZZZ" {
+            break;
+        }
+    }
+
+
+
+    return step.to_string();
 }
 
 fn parse_input(line:&String) -> (&str,(&str,&str)) {
-    let (start, options) = ll.split_once("=").unwrap();
-    println!("start: {}", start);
-    //println!("options: {}", options);
+    let (start, options) = line.split_once("=").unwrap();
     let (sleft, sright) = options.split_once(",").unwrap();
     let sleft = &(sleft.trim())[1..];
     let sright = &(sright.trim())[..3];
