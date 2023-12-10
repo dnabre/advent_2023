@@ -8,7 +8,7 @@
 /*
     Advent of Code 2023: Day 08
         part1 answer:   23147
-        part2 answer:
+        part2 answer:   22289513667691
 
  */
 
@@ -16,6 +16,7 @@ use std::cmp::Ordering;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use core::num;
 use std::str::FromStr;
 use std::time::Instant;
 
@@ -37,7 +38,7 @@ fn main() {
     let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
-  //  println!("Advent of Code, Day 08");
+     println!("Advent of Code, Day 08");
     println!("    ---------------------------------------------");
 
     println!("\t Part 1: {:14} time: {:?}", answer1, duration1);
@@ -139,40 +140,33 @@ fn part2(input_file: &str) -> String {
     let mut visited:HashSet<(&str, u64)> = HashSet::new();
     let mut steps_with_repeats:HashSet<u64> = HashSet::new();
 
-    while step < 50000 {
-        let mut new_starts:Vec<&str> = Vec::new();
-        let ch = choices[(step % ch_list_length) as usize];
-        for current in start_points {
+    let mut end_steps:Vec<u64> = Vec::new();
+    for i in 0..start_points.len() {
+        step =0;
+        let mut current = start_points[i];
+        loop {
             let (l, r) = graph[&current];
-
+            let ch = choices[(step % ch_list_length) as usize];
             if ch == 'L' {
-                let ln = (l, step % ch_list_length);
-                new_starts.push(l);
+                current = l;
             } else {
-                let rn = (r, step % ch_list_length);
-                new_starts.push(r);
+                current = r;
             }
-        }
-
-        let mut done = true;
-        for s in &new_starts {
-            if !end_points.contains(s) {
-                done=false;
+            step += 1;
+            if current.ends_with("Z") {
                 break;
             }
         }
-        if done {
-            println!("all ghosts at ends points");
-            break;
-        }
-        start_points = new_starts;
-        step += 1;
+
+        end_steps.push(step);
+        println!("path from {} to end, {} steps", start_points[i], step);
     }
-    step +=1;
 
-    println!("steps that repeat: {:?}", steps_with_repeats);
 
-    return step.to_string();
+    let answer = lcm(end_steps.as_slice());
+
+
+    return answer.to_string();
 }
 
 fn parse_input(line:&String) -> (&str,(&str,&str)) {
@@ -184,3 +178,18 @@ fn parse_input(line:&String) -> (&str,(&str,&str)) {
 }
 
 
+
+fn lcm(nums: &[u64]) -> u64 {
+    if nums.len() == 1 {
+        return nums[0];
+    }
+    let a = nums[0];
+    let b = lcm(&nums[1..]);
+    a * b / gcd_of_two_numbers(a, b)
+}
+fn gcd_of_two_numbers(a: u64, b: u64) -> u64 {
+    if b == 0 {
+        return a;
+    }
+    gcd_of_two_numbers(b, a % b)
+}
