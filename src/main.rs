@@ -13,13 +13,13 @@
  */
 
 use std::cmp::Ordering;
-use std::collections::{HashMap};
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::str::FromStr;
 use std::time::Instant;
 
-const ANSWER: (&str, &str) = ("23147", "247899149");
+const ANSWER: (&str, &str) = ("23147", "22289513667691");
 
 fn main() {
     let _filename_test = "data/day08/test_input_01.txt";
@@ -34,7 +34,7 @@ fn main() {
     let duration1 = start1.elapsed();
 
     let start2 = Instant::now();
-    let answer2 = part2(_filename_test2);
+    let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
   //  println!("Advent of Code, Day 08");
@@ -45,10 +45,10 @@ fn main() {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
 
-    // println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
-    // if ANSWER.1 != answer2 {
-    //     println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
-    // }
+    println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
+    if ANSWER.1 != answer2 {
+        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
+    }
     println!("    ---------------------------------------------");
 }
 
@@ -106,6 +106,75 @@ fn part1(input_file: &str) -> String {
     return step.to_string();
 }
 
+fn part2(input_file: &str) -> String {
+    let lines = file_to_lines(input_file);
+
+    let mut graph:HashMap<&str,(&str,&str)> = HashMap::new();
+
+    let mut start_points:Vec<&str> = Vec::new();
+    let mut end_points:HashSet<&str> = HashSet::new();
+
+    for i in 2..lines.len() {
+        let ll = &lines[i];
+        let (start, (left,right)) = parse_input(ll);
+        if start.ends_with("A") {
+            start_points.push(start);
+        }
+        if start.ends_with("Z") {
+            end_points.insert(start);
+        }
+
+        graph.insert(start, (left,right));
+    }
+
+    println!("start points: {:?}", start_points );
+    println!("end points  : {:?}", end_points);
+
+    let choices:Vec<char> = lines[0].chars().collect();
+    let ch_list_length = choices.len() as u64;
+    let mut step:u64 =0;
+    println!("step {:2}: starting at  {:?}",
+             step, start_points);
+
+    let mut visited:HashSet<(&str, u64)> = HashSet::new();
+    let mut steps_with_repeats:HashSet<u64> = HashSet::new();
+
+    while step < 50000 {
+        let mut new_starts:Vec<&str> = Vec::new();
+        let ch = choices[(step % ch_list_length) as usize];
+        for current in start_points {
+            let (l, r) = graph[&current];
+
+            if ch == 'L' {
+                let ln = (l, step % ch_list_length);
+                new_starts.push(l);
+            } else {
+                let rn = (r, step % ch_list_length);
+                new_starts.push(r);
+            }
+        }
+
+        let mut done = true;
+        for s in &new_starts {
+            if !end_points.contains(s) {
+                done=false;
+                break;
+            }
+        }
+        if done {
+            println!("all ghosts at ends points");
+            break;
+        }
+        start_points = new_starts;
+        step += 1;
+    }
+    step +=1;
+
+    println!("steps that repeat: {:?}", steps_with_repeats);
+
+    return step.to_string();
+}
+
 fn parse_input(line:&String) -> (&str,(&str,&str)) {
     let (start, options) = line.split_once("=").unwrap();
     let (sleft, sright) = options.split_once(",").unwrap();
@@ -115,9 +184,3 @@ fn parse_input(line:&String) -> (&str,(&str,&str)) {
 }
 
 
-
-fn part2(input_file: &str) -> String {
-    let lines = file_to_lines(input_file);
-
-    return String::new();
-}
