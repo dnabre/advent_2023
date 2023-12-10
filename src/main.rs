@@ -19,7 +19,6 @@ use std::io::{BufRead, BufReader};
 use std::str::FromStr;
 use std::time::Instant;
 
-
 const ANSWER: (&str, &str) = ("245794640", "247899149");
 
 fn main() {
@@ -30,14 +29,14 @@ fn main() {
     let filename_part2 = "data/day08/part2_input.txt";
 
     let start1 = Instant::now();
-    let answer1 = part1(filename_part1);
+    let answer1 = part1(_filename_test);
     let duration1 = start1.elapsed();
 
     let start2 = Instant::now();
-    let answer2 = part2(filename_part2);
+    let answer2 = part2(_filename_test2);
     let duration2 = start2.elapsed();
 
-    println!("Advent of Code, Day 08");
+  //  println!("Advent of Code, Day 08");
     println!("    ---------------------------------------------");
 
     println!("\t Part 1: {:14} time: {:?}", answer1, duration1);
@@ -45,10 +44,10 @@ fn main() {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
 
-    println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
-    if ANSWER.1 != answer2 {
-        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
-    }
+    // println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
+    // if ANSWER.1 != answer2 {
+    //     println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
+    // }
     println!("    ---------------------------------------------");
 }
 
@@ -74,9 +73,33 @@ fn parse_number_list_whitespace<T: FromStr>(number_string: &str) -> Vec<T> {
 fn part1(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
-
+    let choices:Vec<char> = lines[0].chars().collect();
+    let mut step =0;
+    for i in 2..lines.len() {
+        let ll = &lines[i];
+        println!("{}", ll);
+        let (start, options) = ll.split_once("=").unwrap();
+        println!("start: {}", start);
+        //println!("options: {}", options);
+        let (sleft, sright) = options.split_once(",").unwrap();
+        let sleft = &(sleft.trim())[1..];
+        let sright = &(sright.trim())[..3];
+        println!("left: |{}|, right: |{}|", sleft, sright);
+    }
     return String::new();
 }
+
+fn parse_input(line:&String) -> (&str,(&str,&str)) {
+    let (start, options) = ll.split_once("=").unwrap();
+    println!("start: {}", start);
+    //println!("options: {}", options);
+    let (sleft, sright) = options.split_once(",").unwrap();
+    let sleft = &(sleft.trim())[1..];
+    let sright = &(sright.trim())[..3];
+    return (start.trim(), (sleft,sright));
+}
+
+
 
 fn part2(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
