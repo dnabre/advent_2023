@@ -34,3 +34,28 @@ pub fn gcd_of_two_numbers(a: usize, b: usize) -> usize {
     }
     gcd_of_two_numbers(b, a % b)
 }
+
+
+pub fn get_diffs(series: &Vec<i32>) -> Vec<i32>
+{
+    let mut diffs: Vec<i32> = Vec::new();
+    if series.len() < 2 {
+        return series.clone();
+    }
+    let mut left = series[0];
+    for i in 1..series.len() {
+        let d = series[i] - left;
+        diffs.push(d);
+        left = series[i];
+    }
+    return diffs;
+}
+
+pub fn is_all_zero(series: &Vec<i32>) -> bool {
+    for n in series {
+        if *n != 0 {
+            return false;
+        }
+    }
+    return true;
+}
