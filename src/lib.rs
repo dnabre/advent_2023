@@ -78,3 +78,23 @@ pub fn list_to_pairs<T:Copy>(galaxy_list: Vec<(T, T)>) -> Vec<((T, T), (T, T))> 
     }
     return pair_list;
 }
+
+pub fn get_neighbor_points((x,y): (i32,i32), diag: bool) -> Vec<(i32, i32)> {
+    static CARD_DELTA: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
+    static DIAG_DELTA: [(i32, i32); 4] = [(-1, -1), (-1, 1), (1, -1), (1, 1)];
+    let r = y;
+    let c = x;
+
+    let mut neighs: Vec<(i32, i32)> = Vec::new();
+    for i in 0..CARD_DELTA.len() {
+        let (dr, dc) = CARD_DELTA[i];
+        neighs.push((r + dr, c + dc));
+    }
+    if diag {
+        for i in 0..DIAG_DELTA.len() {
+            let (dr, dc) = DIAG_DELTA[i];
+            neighs.push((c+dc, r + dr));
+        }
+    }
+    return neighs;
+}
