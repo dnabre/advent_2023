@@ -67,3 +67,14 @@ pub fn is_all_foo<T: std::cmp::PartialEq>(series: &Vec<T>, element: T) -> bool {
 pub fn get_distance_m1((x1,y1):(usize, usize), (x2,y2):(usize, usize)) -> usize {
     return x1.abs_diff(x2) + y1.abs_diff(y2);
 }
+
+
+pub fn list_to_pairs<T:Copy>(galaxy_list: Vec<(T, T)>) -> Vec<((T, T), (T, T))> {
+    let mut pair_list: Vec<((T, T), (T, T))> = Vec::new();
+    for i in 0..galaxy_list.len() {
+        for j in i + 1..galaxy_list.len() {
+            pair_list.push((galaxy_list[i], galaxy_list[j]));
+        }
+    }
+    return pair_list;
+}
