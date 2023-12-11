@@ -52,10 +52,18 @@ pub fn get_diffs(series: &Vec<i32>) -> Vec<i32>
 }
 
 pub fn is_all_zero(series: &Vec<i32>) -> bool {
+    return is_all_foo(series, 0);
+}
+
+pub fn is_all_foo<T: std::cmp::PartialEq>(series: &Vec<T>, element: T) -> bool {
     for n in series {
-        if *n != 0 {
+        if *n != element {
             return false;
         }
     }
     return true;
+}
+
+pub fn get_distance_m1((x1,y1):(usize, usize), (x2,y2):(usize, usize)) -> usize {
+    return x1.abs_diff(x2) + y1.abs_diff(y2);
 }
