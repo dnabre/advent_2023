@@ -1,3 +1,10 @@
+#![allow(unused_variables)]
+#![allow(unused_imports)]
+#![allow(unused_mut)]
+#![allow(dead_code)]
+#![allow(unused_assignments)]
+#![allow(unreachable_code)]
+
 /*
     Advent of Code 2023: Day 11
         part1 answer:   9609130
@@ -5,9 +12,11 @@
 
  */
 
-use std::time::Instant;
 
+use std::collections::HashSet;
+use std::time::Instant;
 use advent_2023::file_to_lines;
+
 
 const ANSWER: (&str, &str) = ("9609130", "702152204842");
 
@@ -41,49 +50,103 @@ fn main() {
     println!("    ---------------------------------------------");
 }
 
-const GALAXY_EXPAND_FACTOR: usize = 1000000;
-
 fn part1(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
-    let (empty_rows, empty_columns) = find_empty_lines(&lines);
-    let galaxy_list = expand_galaxies(lines, empty_rows, empty_columns, 1);
-    let pair_list = advent_2023::list_to_pairs(galaxy_list);
+    let mut galaxy_list: Vec<(usize, usize)> = Vec::new();
+
+    let grid: Vec<Vec<char>> = lines.iter().map(|l| l.chars().collect()).collect();
+    let mut empty_rows:HashSet<usize> = HashSet::new();
+    let mut empty_columns:HashSet<usize> = HashSet::new();
+
+    for i in 0..grid.len() {
+        let row = &grid[i];
+        if row.iter().any(|&c| c != '.') {
+            continue;
+        }
+        empty_rows.insert(i);
+    }
+    for i in 0..grid[0].len() {
+        if grid.iter().any(|r| r[i] != '.') {
+            continue;
+        }
+        empty_columns.insert(i);
+    }
+
+    let mut y_offset:usize = 0;
+    for y in 0..lines.len() {
+        if empty_rows.contains(&y) {
+            y_offset +=1 ;
+        }
+        let mut x_offset = 0;
+        let row: Vec<char> = lines[y].chars().collect();
+            for x in 0..row.len() {
+                if empty_columns.contains(&x) {
+                    x_offset += 1;
+                }
+                let ch = row[x];
+                if ch == '#' {
+                    galaxy_list.push((x + x_offset, y + y_offset));
+                }
+            }
+    }
+
+
+    let mut pair_list:Vec<((usize,usize),(usize,usize))> = Vec::new();
+    for i in 0..galaxy_list.len() {
+        for j in i+1..galaxy_list.len() {
+            pair_list.push((galaxy_list[i], galaxy_list[j]));
+        }
+    }
+
+
+
+
     let mut answer: usize = 0;
-    for (p1, p2) in pair_list {
+    for (p1,p2) in pair_list {
         let d = advent_2023::get_distance_m1(p1, p2);
         answer += d;
     }
+
+
     return answer.to_string();
 }
 
+const GALAXY_EXPAND_FACTOR:usize = 1000000 -1;
 
 fn part2(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
-    let (empty_rows, empty_columns) = find_empty_lines(&lines);
-    let galaxy_list = expand_galaxies(lines ,empty_rows, empty_columns, GALAXY_EXPAND_FACTOR-1);
-    let pair_list = advent_2023::list_to_pairs(galaxy_list);
 
-    let mut answer: usize = 0;
-    for (p1, p2) in pair_list {
-        let d = advent_2023::get_distance_m1(p1, p2);
-        answer += d;
+    let mut galaxy_list: Vec<(usize, usize)> = Vec::new();
+
+    let grid: Vec<Vec<char>> = lines.iter().map(|l| l.chars().collect()).collect();
+    let mut empty_rows:HashSet<usize> = HashSet::new();
+    let mut empty_columns:HashSet<usize> = HashSet::new();
+
+    for i in 0..grid.len() {
+        let row = &grid[i];
+        if row.iter().any(|&c| c != '.') {
+            continue;
+        }
+        empty_rows.insert(i);
     }
-    return answer.to_string();
-}
+    for i in 0..grid[0].len() {
+        if grid.iter().any(|r| r[i] != '.') {
+            continue;
+        }
+        empty_columns.insert(i);
+    }
 
-fn expand_galaxies(lines: Vec<String>, empty_rows: Vec<usize>, empty_columns: Vec<usize>, expand_by:usize) -> Vec<(usize, usize)> {
-    let mut galaxy_list:Vec<(usize,usize)> = Vec::new();
-    let mut y_offset: usize = 0;
+    let mut y_offset:usize = 0;
     for y in 0..lines.len() {
         if empty_rows.contains(&y) {
-            y_offset += expand_by;
+            y_offset += GALAXY_EXPAND_FACTOR ;
         }
         let mut x_offset = 0;
         let row: Vec<char> = lines[y].chars().collect();
         for x in 0..row.len() {
             if empty_columns.contains(&x) {
-                x_offset += expand_by;
+                x_offset += GALAXY_EXPAND_FACTOR;
             }
             let ch = row[x];
             if ch == '#' {
@@ -91,27 +154,23 @@ fn expand_galaxies(lines: Vec<String>, empty_rows: Vec<usize>, empty_columns: Ve
             }
         }
     }
-    return galaxy_list;
-}
 
-fn find_empty_lines(lines: &Vec<String>) -> (Vec<usize>, Vec<usize>) {
-    let grid: Vec<Vec<char>> = lines.iter().map(|l| l.chars().collect()).collect();
-    let mut empty_rows: Vec<usize> = Vec::new();
-    let mut empty_columns: Vec<usize> = Vec::new();
 
-    for i in 0..grid.len() {
-        let row = &grid[i];
-        if row.iter().any(|&c| c != '.') {
-            continue;
+    let mut pair_list:Vec<((usize,usize),(usize,usize))> = Vec::new();
+    for i in 0..galaxy_list.len() {
+        for j in i+1..galaxy_list.len() {
+            pair_list.push((galaxy_list[i], galaxy_list[j]));
         }
-        empty_rows.push(i);
     }
-    for i in 0..grid[0].len() {
-        if grid.iter().any(|r| r[i] != '.') {
-            continue;
-        }
-        empty_columns.push(i);
-    }
-    (empty_rows, empty_columns)
-}
 
+
+
+    let mut answer: usize = 0;
+    for (p1,p2) in pair_list {
+        let d = advent_2023::get_distance_m1(p1, p2);
+        answer += d;
+    }
+
+
+    return answer.to_string();
+}
