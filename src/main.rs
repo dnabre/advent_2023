@@ -7,8 +7,8 @@
 
 /*
     Advent of Code 2023: Day 11
-        part1 answer:   9609130
-        part2 answer:   702152204842
+        part1 answer:
+        part2 answer:
 
  */
 
@@ -19,7 +19,7 @@ use std::time::Instant;
 use advent_2023::file_to_lines;
 
 
-const ANSWER: (&str, &str) = ("9609130", "702152204842");
+const ANSWER: (&str, &str) = ("7173", "291");
 
 
 // Hardcode which pipe should be used for each problem
