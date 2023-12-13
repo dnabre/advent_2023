@@ -19,6 +19,14 @@ pub fn parse_number_list_whitespace<T: FromStr>(number_string: &str) -> Vec<T> {
     return un_oo;
 }
 
+pub fn parse_number_list_comma<T: FromStr>(number_string: &str) -> Vec<T> {
+    let oo = number_string.split(",").map(|s| s.trim().parse());
+    let un_oo: Vec<T> = oo.map(|r| match r {
+        Ok(n) => { n }
+        Err(_) => { panic!("Error parsing") }
+    }).collect();
+    return un_oo;
+}
 
 pub fn lcm(nums: &[usize]) -> usize {
     if nums.len() == 1 {
