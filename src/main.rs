@@ -38,7 +38,7 @@ fn main() {
     let filename_part2 = "data/day10/part2_input.txt";
 
     let start1 = Instant::now();
-    let answer1 = part1(filename_part1);
+    let answer1 = part1(_filename_test1);
     let duration1 = start1.elapsed();
 
     let start2 = Instant::now();
@@ -228,26 +228,60 @@ fn part1(input_file: &str) -> String {
     let y_max = grid.len();
     let x_max = grid[0].len();
 
+    let mut test_start_loc:Coord = Coord{x:-1,y:-1};
 
-    // print grid
-    // for y in 0..y_max {
-    //     for x in 0..x_max {
-    //         let ch = grid[y][x];
-    //         print!("{}", ch);
-    //     }
-    //     println!();
-    // }
-    // println!();
+ 'y_loop: for y in 0..y_max {
+         for x in 0..x_max {
+            let ch = grid[y][x];
+            if ch == 'S' {
+                test_start_loc = Coord{x: x as i32, y: y as i32};
+                break 'y_loop;
+            }
+        }
+    }
+
+    println!("found start @{}, which is {}", test_start_loc,
+             if test_start_loc == start_point { "correct"} else {"wrong"}
+    );
+
+    let start_adj_coords:Vec<Coord> =
+        advent_2023::get_neighbor_points((test_start_loc.x, test_start_loc.y), false)
+            .iter().map(|(cx,cy)| Coord{ x: *cy, y: *cx }).collect();
+    println!("{:?}", start_adj_coords);
+
+    // let ch = n_loc.shape_from_grid(&grid);
+    // let good_connection = check_from_to((current.loc,pipe_shape), (n_loc,ch));
+
+    let mut test_start_pipe:char = '.';
+    'loop_over_pipe_shape: for p in PIPE_TYPES {
+        for adj_c in &start_adj_coords {
+            let other_shape = adj_c.shape_from_grid(&grid);
+            if check_from_to((test_start_loc, p), (*adj_c, other_shape)) {
+                test_start_pipe = p;
+                println!("good pipe shape: {p}");
+            }
+        }
+    }
+
+        println!("found start pipe: {}@{} compared to {}@{}",
+                 test_start_pipe, test_start_loc, start_pipe_shape,start_point);
+
+
+
+
+    return String::new();
+
 
     let next_to_start = connects_to(start_pipe_shape, start_point);
 
-    let mut visited: HashSet<State> = HashSet::new();
 
     let mut visited_pos:HashSet<Coord> = HashSet::new();
 
     let mut queue: VecDeque<State> = VecDeque::new();
 
     let mut current;
+
+
 
 
     visited_pos.insert(start_point);
@@ -257,7 +291,7 @@ fn part1(input_file: &str) -> String {
         length: 0,
         pipe: 'S',
     };
-    visited.insert(current);
+
 
 
 
@@ -280,9 +314,8 @@ fn part1(input_file: &str) -> String {
     let mut distance_to_start:usize = usize::MIN;
     while !queue.is_empty() {
         current = queue.pop_front().unwrap();
-        visited.insert(current);
+
         visited_pos.insert(current.loc);
-    //    println!("processing : {}, queue size: {}", current, queue.len());
         if current.pipe == 'S' {
             println!("found start location");
             distance_to_start = current.length + 1;
@@ -312,23 +345,24 @@ fn part1(input_file: &str) -> String {
                         length: current.length + 1,
                         pipe: ch
                     };
-                    if !visited.contains(&new_state) {
-                        queue.push_back(new_state);
-                    } else {
-                    }
+                    queue.push_back(new_state);
                 }
             }
         }
     }
     println!("{:?}", current);
 
+
     let mut answer: usize = current.length;
     return answer.to_string();
 }
 
 fn check_from_to((loc,c_pipe): (Coord, char), (n_loc,n_pipe): (Coord, char)) -> bool {
+   println!("checking pipe {c_pipe}@{loc} connects to {n_pipe}@{n_loc}");
+
     if c_pipe == '.' || n_pipe == '.' {
         // neither should be grass
+        println!("\t\t grass");
         return false;
     }
     let start_facing = pipe_to_facing(c_pipe);
@@ -346,8 +380,10 @@ fn check_from_to((loc,c_pipe): (Coord, char), (n_loc,n_pipe): (Coord, char)) -> 
     };
     let f = f.oppose();
     if other_facing.0 == f || other_facing.1 == f {
+        println!("\t\t good");
         return true;
     } else {
+        println!("\t\t bad");
         return false;
     }
 }
