@@ -1,9 +1,9 @@
-// #![allow(unused_variables)]
-// #![allow(unused_imports)]
-// #![allow(unused_mut)]
-// #![allow(dead_code)]
-// #![allow(unused_assignments)]
-// #![allow(unreachable_code)]
+#![allow(unused_variables)]
+#![allow(unused_imports)]
+#![allow(unused_mut)]
+#![allow(dead_code)]
+#![allow(unused_assignments)]
+#![allow(unreachable_code)]
 
 /*
     Advent of Code 2023: Day 10
@@ -22,9 +22,7 @@ use advent_2023::file_to_lines;
 const ANSWER: (&str, &str) = ("7173", "291");
 
 
-// Hardcode which pipe should be used for each problem
-const TEST_START: (Coord, char) = (Coord { x: 1, y: 1 }, 'F');
-const PART1_START: (Coord, char) = (Coord { x: 25, y: 42 }, '7');
+// Hardcode which pipe should be used for each problem const TEST_START: (Coord, char) = (Coord { x: 1, y: 1 }, 'F'); const PART1_START: (Coord, char) = (Coord { x: 25, y: 42 }, '7');
 
 
 fn main() {
@@ -67,10 +65,10 @@ struct Coord {
 }
 
 impl Coord {
-    fn offset_from(&self, other: Coord) -> (i32,i32) {
+    fn offset_from(&self, other: Coord) -> (i32, i32) {
         let dx = self.x - other.x;
         let dy = self.y - other.y;
-        return (dx,dy)
+        return (dx, dy);
     }
 }
 
@@ -90,21 +88,19 @@ impl Coord {
         return ch;
     }
 
-    fn add_offsetr(&self, d_x:i32, d_y:i32) -> Coord{
+    fn add_offsetr(&self, d_x: i32, d_y: i32) -> Coord {
         let new_x = self.x + d_x;
         let new_y = self.y + d_y;
-        let new_coord =  Coord { x: new_x, y: new_y };
+        let new_coord = Coord { x: new_x, y: new_y };
         return new_coord;
     }
     fn add_offset(&self, other: Coord) -> Coord {
         self.add_offsetr(other.x, other.y)
     }
 
-    fn add_offsetpi(&self, (d_x,d_y):(i32,i32)) -> Coord {
-        self.add_offsetr(d_x,d_y)
+    fn add_offsetpi(&self, (d_x, d_y): (i32, i32)) -> Coord {
+        self.add_offsetr(d_x, d_y)
     }
-
-
 }
 
 
@@ -119,7 +115,7 @@ const PIPE_TYPES: [char; 6] = ['|', '-', 'L', 'J', '7', 'F'];
 const FACINGS: [Facing; 4] = [Facing::Up, Facing::Down, Facing::Left, Facing::Right];
 
 
-#[derive(Debug, Copy, Clone, PartialEq,PartialOrd, Eq, Hash)]
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd, Eq, Hash)]
 enum Facing {
     Up,
     Down,
@@ -131,16 +127,13 @@ impl Display for Facing {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}",
                match self {
-                   Facing::Up => {"Up"}
-                   Facing::Down => {"Down"}
-                   Facing::Left => {"Left"}
-                   Facing::Right => {"Right"}
+                   Facing::Up => { "Up" }
+                   Facing::Down => { "Down" }
+                   Facing::Left => { "Left" }
+                   Facing::Right => { "Right" }
                })
     }
 }
-
-
-
 
 
 impl Facing {
@@ -152,23 +145,13 @@ impl Facing {
             Facing::Right => { Facing::Left }
         }
     }
-
-    fn pipe_from_facing(a: Facing, b: Facing) -> char {
-        for p in PIPE_TYPES {
-            let (p1, p2) = pipe_to_facing(p);
-            if (p1 == a || p2 == a) && (p1 == b || p2 == b) {
-                return p;
-            }
-        }
-        panic!("no pipe for facing pair {:?}", (a, b));
-    }
 }
 
 
 fn pipe_to_offset(pipe: char) -> Pipe {
     let (l, r) = match pipe {
         '|' => { ((0, -1), (0, 1)) } // North/South
-        '-' => { ((-1, 0), (1, 0 )) } // West/East
+        '-' => { ((-1, 0), (1, 0)) } // West/East
         'L' => { ((0, -1), (1, 0)) } // North/East
         'J' => { ((-1, 0), (0, -1)) } // North/West
         '7' => { ((-1, 0), (0, 1)) } // South/West
@@ -208,64 +191,36 @@ struct State {
     loc: Coord,
     last_loc: Coord,
     length: usize,
-    pipe: char
+    pipe: char,
 }
+
 impl Display for State {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f,"State: '{}' loc: {}, last_loc {}, length: {}",
+        write!(f, "State: '{}' loc: {}, last_loc {}, length: {}",
                self.pipe, self.loc, self.last_loc, self.length)
     }
 }
 
 fn part1(input_file: &str) -> String {
-    println!("processing {}", input_file);
     let lines = file_to_lines(input_file);
 
-    let (start_point, start_pipe_shape) = match input_file {
-        "data/day10/part1_input.txt" => {
-            PART1_START
-        }
-        _ => {
-            TEST_START
-        }
-    };
-
-    println!("start: {:?}", (start_point, start_pipe_shape));
     let grid: Vec<Vec<char>> = lines.iter().map(|l| l.chars().collect()).collect();
-
     let start_point = get_start_point(&grid);
-    let start_point = start_point;
+
     let start_pipe_shape = get_start_shape(&grid, &start_point);
-
-
-
-
-
-
-
-
-
-
-
     let next_to_start = connects_to(start_pipe_shape, start_point);
 
-
-    let mut visited_pos:HashSet<Coord> = HashSet::new();
-
+    let mut visited_pos: HashSet<Coord> = HashSet::new();
     let mut queue: VecDeque<State> = VecDeque::new();
-
     let mut current;
-
-
-
 
     visited_pos.insert(start_point);
 
-  current = State {
+    current = State {
         loc: next_to_start[0],
         last_loc: start_point,
         length: 1,
-        pipe:next_to_start[0].shape_from_grid(&grid),
+        pipe: next_to_start[0].shape_from_grid(&grid),
     };
     queue.push_front(current);
     current = State {
@@ -276,39 +231,28 @@ fn part1(input_file: &str) -> String {
     };
     queue.push_front(current);
 
-    let mut distance_to_start:usize = usize::MIN;
+
     while !queue.is_empty() {
         current = queue.pop_front().unwrap();
-
         visited_pos.insert(current.loc);
-        if current.pipe == 'S' {
-            println!("found start location");
-            distance_to_start = current.length + 1;
-            break;
-
-        }
-
         let pipe_shape_lookup = current.loc.shape_from_grid(&grid);
         let pipe_shape = current.pipe;
-        assert_eq!(pipe_shape,pipe_shape_lookup);
-
         let adj = connects_to(pipe_shape, current.loc);
-        let adj_shapes = [adj[0].shape_from_grid(&grid), adj[1].shape_from_grid(&grid)];
         for i in 0..2 {
             let n_loc = adj[i];
             if visited_pos.contains(&n_loc) {
                 continue;
             } else {
                 let ch = n_loc.shape_from_grid(&grid);
-                let good_connection = check_from_to((current.loc,pipe_shape), (n_loc,ch));
-                if !good_connection {
+                if !check_from_to((current.loc, pipe_shape),
+                                  (n_loc, ch)) {
                     continue;
                 } else {
                     let new_state = State {
                         loc: n_loc,
                         last_loc: current.loc,
                         length: current.length + 1,
-                        pipe: ch
+                        pipe: ch,
                     };
                     queue.push_back(new_state);
                 }
@@ -318,14 +262,14 @@ fn part1(input_file: &str) -> String {
     println!("{:?}", current);
 
 
-    let mut answer: usize = current.length;
+    let answer: usize = current.length;
     return answer.to_string();
 }
 
 fn get_start_point(grid: &Vec<Vec<char>>) -> Coord {
     let y_max = grid.len();
     let x_max = grid[0].len();
-    let mut start_pipe_shape: char = ' ';
+
     let mut start_point: Coord = Coord { x: -1, y: -1 };
     for y in 0..y_max {
         for x in 0..x_max {
@@ -333,7 +277,6 @@ fn get_start_point(grid: &Vec<Vec<char>>) -> Coord {
             if ch == 'S' {
                 start_point = Coord { x: x as i32, y: y as i32 };
                 return start_point;
-
             }
         }
     }
@@ -342,10 +285,6 @@ fn get_start_point(grid: &Vec<Vec<char>>) -> Coord {
 
 fn get_start_shape(grid: &Vec<Vec<char>>, start_loc: &Coord) -> char {
     let offsets = [(1, 0), (-1, 0), (0, -1), (0, 1)];
-
-
-    let east_point = start_loc.add_offsetr(1, 0);
-    let east_char = east_point.shape_from_grid(&grid);
 
     let ch = start_loc.add_offsetpi(offsets[0]).shape_from_grid(&grid);
     let connects_east = ch == '-' || ch == 'J' || ch == '7';
@@ -370,49 +309,28 @@ fn get_start_shape(grid: &Vec<Vec<char>>, start_loc: &Coord) -> char {
     start_pipe
 }
 
-fn get_pipe_from_facings((f1,f2):(Facing,Facing)) -> char {
-    println!("getting pipe shape for facings: ");
-    for i in 0..PIPE_TYPES.len() {
-        let p:char = PIPE_TYPES[i];
-        let (a,b) = pipe_to_facing(p);
-        if (f1,f2) == (a,b) || (f1,f2) == (b,a) {
-            println!("{f1} x {f2} == {a} x {b} or {b} x {a}  \t ==> {p}");
-            return p;
-        }
 
-    }
-    println!("can't find pipe for facings: {f1}x{f2}");
-    return '?';
-}
-
-
-fn check_from_to((loc,c_pipe): (Coord, char), (n_loc,n_pipe): (Coord, char)) -> bool {
-   println!("checking pipe {c_pipe}@{loc} connects to {n_pipe}@{n_loc}");
-
+fn check_from_to((loc, c_pipe): (Coord, char), (n_loc, n_pipe): (Coord, char)) -> bool {
     if c_pipe == '.' || n_pipe == '.' {
         // neither should be grass
-        println!("\t\t grass");
         return false;
     }
-    let start_facing = pipe_to_facing(c_pipe);
     let other_facing = pipe_to_facing(n_pipe);
 
     let offset = n_loc.offset_from(loc);
 
-    assert_ne!(offset, (0,0));
+    assert_ne!(offset, (0, 0));
     let f = facing_from_offset(offset);
     let f = f.oppose();
     if other_facing.0 == f || other_facing.1 == f {
-        println!("\t\t good");
         return true;
     } else {
-        println!("\t\t bad");
         return false;
     }
 }
 
 fn facing_from_offset(offset: (i32, i32)) -> Facing {
-        match offset {
+    match offset {
         (0, 1) => { Facing::Down }
         (0, -1) => { Facing::Up }
         (1, 0) => { Facing::Right }
@@ -424,9 +342,7 @@ fn facing_from_offset(offset: (i32, i32)) -> Facing {
 fn part2(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
-    let mut answer: usize = 0;
-
-
+    let answer: usize = 0;
     return answer.to_string();
 }
 
