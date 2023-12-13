@@ -40,7 +40,7 @@ fn main() {
     let duration1 = start1.elapsed();
 
     let start2 = Instant::now();
-    let answer2 = part2(_filename_test2);
+    let answer2 = part2(_filename_test1);
     let duration2 = start2.elapsed();
 
     //  println!("Advent of Code, Day 10");
@@ -201,70 +201,6 @@ impl Display for State {
     }
 }
 
-fn part1(input_file: &str) -> String {
-    let lines = file_to_lines(input_file);
-
-    let grid: Vec<Vec<char>> = lines.iter().map(|l| l.chars().collect()).collect();
-    let start_point = get_start_point(&grid);
-
-    let start_pipe_shape = get_start_shape(&grid, &start_point);
-    let next_to_start = connects_to(start_pipe_shape, start_point);
-
-    let mut visited_pos: HashSet<Coord> = HashSet::new();
-    let mut queue: VecDeque<State> = VecDeque::new();
-    let mut current;
-
-    visited_pos.insert(start_point);
-
-    current = State {
-        loc: next_to_start[0],
-        last_loc: start_point,
-        length: 1,
-        pipe: next_to_start[0].shape_from_grid(&grid),
-    };
-    queue.push_front(current);
-    current = State {
-        loc: next_to_start[1],
-        last_loc: start_point,
-        length: 1,
-        pipe: next_to_start[1].shape_from_grid(&grid),
-    };
-    queue.push_front(current);
-
-
-    while !queue.is_empty() {
-        current = queue.pop_front().unwrap();
-        visited_pos.insert(current.loc);
-        let pipe_shape_lookup = current.loc.shape_from_grid(&grid);
-        let pipe_shape = current.pipe;
-        let adj = connects_to(pipe_shape, current.loc);
-        for i in 0..2 {
-            let n_loc = adj[i];
-            if visited_pos.contains(&n_loc) {
-                continue;
-            } else {
-                let ch = n_loc.shape_from_grid(&grid);
-                if !check_from_to((current.loc, pipe_shape),
-                                  (n_loc, ch)) {
-                    continue;
-                } else {
-                    let new_state = State {
-                        loc: n_loc,
-                        last_loc: current.loc,
-                        length: current.length + 1,
-                        pipe: ch,
-                    };
-                    queue.push_back(new_state);
-                }
-            }
-        }
-    }
-    println!("{:?}", current);
-
-
-    let answer: usize = current.length;
-    return answer.to_string();
-}
 
 fn get_start_point(grid: &Vec<Vec<char>>) -> Coord {
     let y_max = grid.len();
@@ -339,10 +275,134 @@ fn facing_from_offset(offset: (i32, i32)) -> Facing {
     }
 }
 
-fn part2(input_file: &str) -> String {
+fn part1(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
-    let answer: usize = 0;
+    let grid: Vec<Vec<char>> = lines.iter().map(|l| l.chars().collect()).collect();
+    let start_point = get_start_point(&grid);
+
+    let start_pipe_shape = get_start_shape(&grid, &start_point);
+    let next_to_start = connects_to(start_pipe_shape, start_point);
+
+    let mut visited_pos: HashSet<Coord> = HashSet::new();
+    let mut queue: VecDeque<State> = VecDeque::new();
+    let mut current;
+
+    visited_pos.insert(start_point);
+
+    current = State {
+        loc: next_to_start[0],
+        last_loc: start_point,
+        length: 1,
+        pipe: next_to_start[0].shape_from_grid(&grid),
+    };
+    queue.push_front(current);
+    current = State {
+        loc: next_to_start[1],
+        last_loc: start_point,
+        length: 1,
+        pipe: next_to_start[1].shape_from_grid(&grid),
+    };
+    queue.push_front(current);
+
+
+    while !queue.is_empty() {
+        current = queue.pop_front().unwrap();
+        visited_pos.insert(current.loc);
+        let pipe_shape_lookup = current.loc.shape_from_grid(&grid);
+        let pipe_shape = current.pipe;
+        let adj = connects_to(pipe_shape, current.loc);
+        for i in 0..2 {
+            let n_loc = adj[i];
+            if visited_pos.contains(&n_loc) {
+                continue;
+            } else {
+                let ch = n_loc.shape_from_grid(&grid);
+                if !check_from_to((current.loc, pipe_shape),
+                                  (n_loc, ch)) {
+                    continue;
+                } else {
+                    let new_state = State {
+                        loc: n_loc,
+                        last_loc: current.loc,
+                        length: current.length + 1,
+                        pipe: ch,
+                    };
+                    queue.push_back(new_state);
+                }
+            }
+        }
+    }
+    println!("{:?}", current);
+
+
+    let answer: usize = current.length;
     return answer.to_string();
 }
 
+fn part2(input_file: &str) -> String {
+    let lines = file_to_lines(input_file);
+
+    let grid: Vec<Vec<char>> = lines.iter().map(|l| l.chars().collect()).collect();
+    let start_point = get_start_point(&grid);
+
+    let start_pipe_shape = get_start_shape(&grid, &start_point);
+    let next_to_start = connects_to(start_pipe_shape, start_point);
+
+    let mut visited_pos: HashSet<Coord> = HashSet::new();
+    let mut queue: VecDeque<State> = VecDeque::new();
+    let mut current;
+
+    visited_pos.insert(start_point);
+
+    current = State {
+        loc: next_to_start[0],
+        last_loc: start_point,
+        length: 1,
+        pipe: next_to_start[0].shape_from_grid(&grid),
+    };
+    queue.push_front(current);
+    current = State {
+        loc: next_to_start[1],
+        last_loc: start_point,
+        length: 1,
+        pipe: next_to_start[1].shape_from_grid(&grid),
+    };
+    queue.push_front(current);
+
+
+    while !queue.is_empty() {
+        current = queue.pop_front().unwrap();
+        visited_pos.insert(current.loc);
+        let pipe_shape_lookup = current.loc.shape_from_grid(&grid);
+        let pipe_shape = current.pipe;
+        let adj = connects_to(pipe_shape, current.loc);
+        for i in 0..2 {
+            let n_loc = adj[i];
+            if visited_pos.contains(&n_loc) {
+                continue;
+            } else {
+                let ch = n_loc.shape_from_grid(&grid);
+                if !check_from_to((current.loc, pipe_shape),
+                                  (n_loc, ch)) {
+                    continue;
+                } else {
+                    let new_state = State {
+                        loc: n_loc,
+                        last_loc: current.loc,
+                        length: current.length + 1,
+                        pipe: ch,
+                    };
+                    queue.push_back(new_state);
+                }
+            }
+        }
+    }
+    println!("{:?}", current);
+
+    println!("visited positions: \n\t{:?}", visited_pos);
+    println!("number of visited positions: {}", visited_pos.len());
+
+    let answer: usize = current.length;
+    return answer.to_string();
+}
