@@ -1,10 +1,3 @@
-// #![allow(unused_variables)]
-// #![allow(unused_imports)]
-// #![allow(unused_mut)]
-// #![allow(dead_code)]
-// #![allow(unused_assignments)]
-// #![allow(unreachable_code)]
-
 /*
     Advent of Code 2023: Day 12
         part1 answer:   7922
