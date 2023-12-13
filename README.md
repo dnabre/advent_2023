@@ -17,6 +17,7 @@
 | [Day 9: Mirage Maintenance ](https://adventofcode.com/2023/day/9)              | list manipulation | * | * |
 | [Day 10: Pipe Maze  ](https://adventofcode.com/2023/day/10)                    | graph transversal | _ | _ |
 | [Day 11: Cosmic Expansion](https://adventofcode.com/2023/day/11)               | coord manipulation | * | * |
-
+| [Day 12: Hot Springs](https://adventofcode.com/2023/day/12)                    | dynamic programming | * | * |
+| [Day 13: Point of Incidence](https://adventofcode.com/2023/day/13)             |  | _ | _ |
 
 Still learning Rust as I go, so this code will likely be messy and non-idiomatic. Not recommended as good examples of the language.
