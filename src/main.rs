@@ -7,7 +7,7 @@
 
 /*
     Advent of Code 2023: Day 12
-        part1 answer:
+        part1 answer:   7922
         part2 answer:
 
  */
@@ -19,13 +19,12 @@ use std::time::Instant;
 use advent_2023::file_to_lines;
 
 
-const ANSWER: (&str, &str) = ("7173", "291");
+const ANSWER: (&str, &str) = ("7922", "291");
 
 
 // Hardcode which pipe should be used for each problem
 const TEST_START: ((i32, i32), char) = ((1, 1), 'F');
 const PART1_START: ((i32, i32), char) = ((25, 42), '7');
-
 
 
 fn main() {
@@ -60,14 +59,19 @@ fn main() {
 }
 
 
-
 fn part1(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
-    let mut answer: usize = 0;
+    let mut sum = 0;
 
+    for l in &lines {
+        let (pattern, s_counts) = l.split_once(" ").unwrap();
+        let counts: Vec<usize> = advent_2023::parse_number_list_comma(s_counts);
+        let t = count_for_line(pattern, &counts);
+        sum += t;
 
-    return answer.to_string();
+    }
+    return sum.to_string();
 }
 
 fn part2(input_file: &str) -> String {
@@ -77,4 +81,41 @@ fn part2(input_file: &str) -> String {
 
 
     return answer.to_string();
+}
+
+
+fn count_for_line(line: &str, counts: &[usize]) -> usize {
+    let pattern: Vec<char> = line.chars().collect();
+    let n = pattern.len();
+    let m = counts.len();
+    let mut dp = &mut vec![vec![0; n + 1]; m + 1];
+    let mut next_dp = &mut vec![vec![0; n + 1]; m + 1];
+
+    (dp[m][0], dp[m-1][counts[m-1]]) = (1,1);
+
+    for i in (0..n).rev() {
+        for c in 0..=m {
+            let max_count;
+            if c == m {
+                max_count = 0;
+            } else {
+                max_count = counts[c];
+            }
+            let ch = pattern[i];
+            for count in 0..=max_count {
+                next_dp[c][count] = 0;
+                if ch == '#' || ch == '?' {
+                    next_dp[c][count] += dp[c][count + 1];
+                }
+            }
+              if ch == '.' || ch == '?' {
+                next_dp[c][0] += dp[c][0];
+                if c < m {
+                    next_dp[c][max_count] += dp[c + 1][0];
+                }
+            }
+        }
+        (dp, next_dp) = (next_dp, dp);
+    }
+    return dp[0][0];
 }
