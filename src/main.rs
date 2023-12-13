@@ -8,13 +8,16 @@
 /*
     Advent of Code 2023: Day 10
         part1 answer: 7173
-        part2 answer:
+        part2 answer: 291
 
  */
 
 
 use std::collections::{HashMap, HashSet, VecDeque};
 use std::fmt::{Display, Formatter};
+use std::fs::File;
+use std::io::{BufWriter, Write};
+use std::path::Path;
 use std::time::Instant;
 use advent_2023::file_to_lines;
 
@@ -40,10 +43,10 @@ fn main() {
     let duration1 = start1.elapsed();
 
     let start2 = Instant::now();
-    let answer2 = part2(_filename_test1);
+    let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
-    //  println!("Advent of Code, Day 10");
+    println!("Advent of Code, Day 10");
     println!("    ---------------------------------------------");
 
     println!("\t Part 1: {:14} time: {:?}", answer1, duration1);
@@ -51,10 +54,10 @@ fn main() {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
 
-//     println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
-//     if ANSWER.1 != answer2 {
-//         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
-//     }
+    println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
+    if ANSWER.1 != answer2 {
+        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
+    }
     println!("    ---------------------------------------------");
 }
 
@@ -100,6 +103,9 @@ impl Coord {
 
     fn add_offsetpi(&self, (d_x, d_y): (i32, i32)) -> Coord {
         self.add_offsetr(d_x, d_y)
+    }
+    fn from_pair(i_x:i32, i_y:i32) -> Coord {
+        return Coord{x:i_x, y:i_y}
     }
 }
 
@@ -333,7 +339,7 @@ fn part1(input_file: &str) -> String {
             }
         }
     }
-    println!("{:?}", current);
+
 
 
     let answer: usize = current.length;
@@ -362,17 +368,19 @@ fn part2(input_file: &str) -> String {
         pipe: next_to_start[0].shape_from_grid(&grid),
     };
     queue.push_front(current);
-    current = State {
-        loc: next_to_start[1],
-        last_loc: start_point,
-        length: 1,
-        pipe: next_to_start[1].shape_from_grid(&grid),
-    };
-    queue.push_front(current);
+    // current = State {
+    //     loc: next_to_start[1],
+    //     last_loc: start_point,
+    //     length: 1,
+    //     pipe: next_to_start[1].shape_from_grid(&grid),
+    // };
+    // queue.push_front(current);
 
+    let mut grid_loop:Vec<(isize, isize)> = Vec::new();
 
     while !queue.is_empty() {
         current = queue.pop_front().unwrap();
+        grid_loop.push((current.loc.x as isize, current.loc.y as isize));
         visited_pos.insert(current.loc);
         let pipe_shape_lookup = current.loc.shape_from_grid(&grid);
         let pipe_shape = current.pipe;
@@ -398,11 +406,54 @@ fn part2(input_file: &str) -> String {
             }
         }
     }
-    println!("{:?}", current);
 
-    println!("visited positions: \n\t{:?}", visited_pos);
-    println!("number of visited positions: {}", visited_pos.len());
 
-    let answer: usize = current.length;
+
+    let boundary_count = visited_pos.len() as isize;
+
+
+    let mut points = grid_loop.clone();
+    points.push(points[0]);
+
+
+    let sum : isize = points.windows(2)
+        .map(|p| { p[0].0 * p[1].1 - p[0].1 * p[1].0 }).sum();
+    let area = sum.abs()/2;
+
+
+    let answer = area - (boundary_count / 2) + 2;
+
+
+
     return answer.to_string();
+}
+
+fn write_new_map(grid: Vec<Vec<char>>, visited_pos: &mut HashSet<Coord>) -> std::io::Result<Vec<Vec<char>>> {
+    let path = Path::new("test_output.txt");
+    let display = path.display();
+    let mut file = match File::create(&path ){
+        Err(why) =>{ panic!("couldn't create {}: {}", display, why)}
+        Ok(file) => file
+    };
+    let mut out = BufWriter::new(std::fs::File::create("test_output.txt")?);
+    let mut new_grid:Vec<Vec<char>> = Vec::new();
+    for y in 0..grid.len() as i32 {
+        let mut line_vec:Vec<char> = Vec::new();
+        for x in 0..grid[0].len() as i32 {
+            let mut ch;
+            if visited_pos.contains(&Coord::from_pair(x, y)) {
+                //ch = '#';
+                ch = grid[y as usize][x as usize];
+            } else {
+                ch = '.';
+            }
+            write!(out, "{ch}")?;
+            line_vec.push(ch);
+        }
+        new_grid.push(line_vec);
+        writeln!(out)?;
+    }
+    out.flush()?;
+    Ok(new_grid)
+
 }
