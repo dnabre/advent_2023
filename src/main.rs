@@ -54,6 +54,14 @@ fn main() {
 fn part1(input_file: &str) -> String {
     let lines = file_to_lines(input_file);
 
+    let l = &lines[0];
+    {
+        println!("{}", l);
+        for divider in 1..l.len()-1 {
+
+        }
+
+    }
 
     let answer = 0;
     return answer.to_string();
