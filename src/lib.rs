@@ -19,6 +19,28 @@ pub fn file_to_lines(input_file: &str) -> Vec<String> {
     return lines;
 }
 
+
+pub fn file_to_single_line(input_file: &str, merge_on:Option<char>) -> String {
+    let file = File::open(input_file).expect(&*format!("error opening file {}", input_file));
+    let bfile = BufReader::new(file);
+    let lines: Vec<String> = bfile.lines().filter_map(|x| x.ok()).collect();
+    if lines.len() == 1 {
+        return lines[0].clone();
+    } else {
+        let mut sb = String::new();
+        for i in 0..(lines.len()-1) {
+            sb.push_str(lines[i].as_str());
+             match merge_on {
+                None => {}
+                Some(ch) => {sb.push(ch); }
+            }
+
+        }
+        sb.push_str(lines.last().unwrap().as_str());
+        return sb.to_string()
+    }
+}
+
 pub fn gcd_of_two_numbers(a: usize, b: usize) -> usize {
     if b == 0 {
         return a;
