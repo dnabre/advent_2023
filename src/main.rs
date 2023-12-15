@@ -12,7 +12,10 @@
 
  */
 
+use std::collections::VecDeque;
+use std::fmt::Debug;
 use std::path::Component::ParentDir;
+use std::str::FromStr;
 use std::time::Instant;
 
 use advent_2023::file_to_lines;
@@ -84,10 +87,93 @@ fn calculate_hash(s: &str) -> u8 {
     return result as u8;
 }
 
+
+fn str_to_char_vec(s:&str) -> Vec<char> {
+    let mut r_vec:Vec<char> = Vec::with_capacity(s.len());
+    let b_array = s.as_bytes();
+    for i in 0..s.len() {
+        let ch:char = b_array[i] as char;
+        r_vec.push(ch);
+    }
+    return r_vec;
+}
+
 fn part2(input_file: &str) -> String {
-    let lines = file_to_lines(input_file);
+    let l = advent_2023::file_to_single_line(input_file,None);
+    let parts = l.split(",").collect::<Vec<_>>();
+    //let mut table: [Vec<u32>; 256] = [Vec::new(); 256];
+    let mut table: Vec<VecDeque<(String,u32)>>  = Vec::with_capacity(256);
+    for i in 0..256 {
+        table.push(VecDeque::new());
+    }
+
+    for p in &parts {
+
+        let mut sb = String::new();
+        let c_array = str_to_char_vec(p);
+        let mut i = 0;
+        while i < c_array.len() && c_array[i] != '=' && c_array[i] != '-' {
+            sb.push(c_array[i]);
+            i += 1;
+        }
+        let key = sb.to_string();
+        let key2 = key.clone();
+        let h = calculate_hash(key.as_str());
+        let h_idx = h as usize;
+        let op = c_array[i];
+        let mut num:Option<u32> = None;
+        if op== '=' {
+            i += 1;
+
+            let mut sb = String::new();
+            for j in i..c_array.len() {
+                sb.push(c_array[i]);
+            }
+            num = Some(sb.parse().unwrap());
+        }
+      //
+        match op {
+            '='=> {
+                let entry = (key,num.unwrap());
+                table[h_idx].push_back(entry);
+            },
+            '-' => {
+                println!("\tSearching table {h_idx} for key: {key2}");
+                println!("\t\t {:?}", table[h_idx]);
+                let mut t_idx = 0;
+                for t_idx in 0..table[h_idx].len() {
+                    let (s,v) = &table[h_idx][t_idx];
+                    println!("\t\t {t_idx:3} {:?}", (s,v));
+                    if *s == key {
+                        let r=table[h_idx].remove(i-1);
+                        println!("\t\t removal result: {:?}", r);
+                        break;
+                    }
+                }
+
+            }
+            x =>{ panic!("unknown op: {x}")}
+        }
+        println!("After \"{}\"", p);
+        print_table(&table);
+        println!("\t key: {key2}, op: {op} , num:{:?}, hash:{}", num, h);
+        println!();
+    }
+
+
+
 
     let answer = 0;
     return answer.to_string();
+}
+
+fn print_table(table: &Vec<VecDeque<(String, u32)>>) {
+    for t_idx in 0..table.len() {
+        if table[t_idx].is_empty() {
+            continue;
+        }
+        println!("Box {t_idx:3}: {:?}", table[t_idx]);
+
+    }
 }
 
