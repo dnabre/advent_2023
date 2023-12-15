@@ -152,3 +152,14 @@ pub fn parse_number_list_whitespace<T: FromStr>(number_string: &str) -> Vec<T> {
     }).collect();
     return un_oo;
 }
+
+
+pub fn str_to_char_vec(s: &str) -> Vec<char> {
+    let mut r_vec: Vec<char> = Vec::with_capacity(s.len());
+    let b_array = s.as_bytes();
+    for i in 0..s.len() {
+        let ch: char = b_array[i] as char;
+        r_vec.push(ch);
+    }
+    return r_vec;
+}
