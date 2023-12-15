@@ -117,3 +117,20 @@ pub fn get_neighbor_points((x,y): (i32,i32), diag: bool) -> Vec<(i32, i32)> {
     }
     return neighs;
 }
+
+pub fn group_newline_separated_lines(lines: &Vec<String>) -> Vec<String> {
+    let mut group_vec: Vec<String> = Vec::new();
+    let mut sb = String::new();
+    for i in 0..lines.len() {
+        let l = &lines[i];
+        if l.len() == 0 {
+            group_vec.push(sb);
+            sb = String::new();
+        } else {
+            sb.push_str(l);
+            sb.push('\n');
+        }
+    }
+    group_vec.push(sb);
+    group_vec
+}
