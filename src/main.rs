@@ -1,12 +1,12 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(dead_code)]
-#![allow(unused_assignments)]
-#![allow(unreachable_code)]
+// #![allow(unused_variables)]
+// #![allow(unused_imports)]
+// #![allow(unused_mut)]
+// #![allow(dead_code)]
+// #![allow(unused_assignments)]
+// #![allow(unreachable_code)]
 
 /*
-    Advent of Code 2023: Day 14
+    Advent of Code 2023: Day 15
         part1 answer:
         part2 answer:
 
