@@ -1,9 +1,9 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(dead_code)]
-#![allow(unused_assignments)]
-#![allow(unreachable_code)]
+// #![allow(unused_variables)]
+// #![allow(unused_imports)]
+// #![allow(unused_mut)]
+// #![allow(dead_code)]
+// #![allow(unused_assignments)]
+// #![allow(unreachable_code)]
 
 /*
     Advent of Code 2023: Day 13
@@ -12,8 +12,6 @@
 
  */
 
-
-use std::fmt::Display;
 use std::time::Instant;
 use advent_2023::file_to_lines;
 
@@ -35,7 +33,7 @@ fn main() {
     let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
-    // println!("Advent of Code, Day 13");
+    println!("Advent of Code, Day 13");
     println!("    ---------------------------------------------");
 
     println!("\t Part 1: {:14} time: {:?}", answer1, duration1);
@@ -62,13 +60,7 @@ fn part1(input_file: &str) -> String {
         let h_idx = get_reflection_index(&rows);
         let v_idx = get_reflection_index(&cols);
 
-        if let Some(q) = h_idx {
-            sum += 100 * q;
-        } else if let Some(q) = v_idx {
-            sum += q;
-        } else {
-            panic!("reflection index not found!")
-        }
+        sum = day13_tally_score(sum, h_idx, v_idx);
     }
 
     return sum.to_string();
@@ -84,31 +76,25 @@ fn part2(input_file: &str) -> String {
 
     for i in 0..grouped_patterns.len() {
         let (rows, cols) = bit_pack_both_orders(grouped_patterns[i].as_str());
-        //
-
 
         let h_idx = get_smudged_reflection_index(&rows);
         let v_idx = get_smudged_reflection_index(&cols);
 
-        // if h_idx != h_idx2 {
-        //     println!("h_idx2 is wrong: {:?} should be {:?}", h_idx2, h_idx)
-        // }
-        // if v_idx != v_idx2 {
-        //     println!("v_idx2 is wrong: {:?} should be {:?}", v_idx2, v_idx)
-        // }
-
-
-        if let Some(q) = h_idx {
-            sum += 100 * q;
-        } else if let Some(q) = v_idx {
-            sum += q;
-        } else {
-            panic!("reflection index not found!")
-        }
+        sum = day13_tally_score(sum, h_idx, v_idx);
     }
-
-
     return sum.to_string();
+}
+
+fn day13_tally_score(sum: usize, h_idx: Option<usize>, v_idx: Option<usize>) -> usize {
+    let mut sum_delta = 0;
+    if let Some(q) = h_idx {
+        sum_delta += 100 * q;
+    } else if let Some(q) = v_idx {
+        sum_delta += q;
+    } else {
+        panic!("reflection index not found!")
+    }
+    return sum + sum_delta;
 }
 
 
@@ -122,7 +108,7 @@ fn bit_pack_both_orders(p: &str) -> (Vec<u32>, Vec<u32>) {
                 cols[i] |= 1 << j;
             }
             '.' => {}
-            x_ch => { panic!("unexpected character: {x_ch}") }
+            x_ch => { panic!("unexpected character: {}", x_ch) }
         });
         n
     }).collect();
@@ -130,7 +116,6 @@ fn bit_pack_both_orders(p: &str) -> (Vec<u32>, Vec<u32>) {
 }
 
 fn get_reflection_index(seq: &[u32]) -> Option<usize> {
-    // removed .collect::<Vec<_>>()
     for idx in 0..seq.len() - 1 {
         let paired_split_on_index = (0..=idx).into_iter().rev().zip(idx + 1..seq.len());
         let pair_values = paired_split_on_index.into_iter().map(|(a, b)| (seq[a], seq[b]));
@@ -143,26 +128,16 @@ fn get_reflection_index(seq: &[u32]) -> Option<usize> {
 }
 
 fn get_smudged_reflection_index(seq: &[u32]) -> Option<usize> {
-    // removed .collect::<Vec<_>>()
     for idx in 0..seq.len() - 1 {
         let paired_split_on_index = (0..=idx).into_iter().rev().zip(idx + 1..seq.len());
-
-
         let pair_values = paired_split_on_index.into_iter().map(|(a, b)| (seq[a], seq[b]));
 
-
+        //instead of checking for equality get count of bits which diff
         let xored_pairs = pair_values.into_iter().map(|(x, y)| (x ^ y).count_ones()).collect::<Vec<_>>();
-
-        println!("{idx:3} xored_pairs: {:?}", xored_pairs);
-
-        let sum_of_xored:u32= xored_pairs.iter().sum();
-         if sum_of_xored == 1 {
-             println!("\t{idx:3} sum of xored pairs is {}", sum_of_xored);
-
-             return Some(idx+1);
+        let sum_of_xored: u32 = xored_pairs.iter().sum();
+        if sum_of_xored == 1 {
+            return Some(idx + 1);
         }
-
-
     }
     return None;
 }

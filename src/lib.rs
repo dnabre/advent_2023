@@ -36,6 +36,7 @@ pub fn lcm(nums: &[usize]) -> usize {
     let b = lcm(&nums[1..]);
     a * b / gcd_of_two_numbers(a, b)
 }
+
 pub fn gcd_of_two_numbers(a: usize, b: usize) -> usize {
     if b == 0 {
         return a;
@@ -44,8 +45,7 @@ pub fn gcd_of_two_numbers(a: usize, b: usize) -> usize {
 }
 
 
-pub fn get_diffs(series: &Vec<i32>) -> Vec<i32>
-{
+pub fn get_diffs(series: &Vec<i32>) -> Vec<i32> {
     let mut diffs: Vec<i32> = Vec::new();
     if series.len() < 2 {
         return series.clone();
@@ -72,23 +72,22 @@ pub fn is_all_foo<T: std::cmp::PartialEq>(series: &Vec<T>, element: T) -> bool {
     return true;
 }
 
-pub fn get_distance_m1((x1,y1):(usize, usize), (x2,y2):(usize, usize)) -> usize {
+pub fn get_distance_m1((x1, y1): (usize, usize), (x2, y2): (usize, usize)) -> usize {
     return x1.abs_diff(x2) + y1.abs_diff(y2);
 }
 
-pub fn all_pairs_from_list<T: Clone>(list:Vec<T>) -> Vec<(T,T)> {
-    let mut pair_list :Vec<(T,T)> = Vec::new();
+pub fn all_pairs_from_list<T: Clone>(list: Vec<T>) -> Vec<(T, T)> {
+    let mut pair_list: Vec<(T, T)> = Vec::new();
     for i in 0..list.len() {
-        for j in i+1..list.len() {
-            pair_list.push((list[i].clone(),list[j].clone()));
+        for j in i + 1..list.len() {
+            pair_list.push((list[i].clone(), list[j].clone()));
         }
     }
-    return pair_list
+    return pair_list;
 }
 
 
-
-pub fn list_to_pairs<T:Copy>(galaxy_list: Vec<(T, T)>) -> Vec<((T, T), (T, T))> {
+pub fn list_to_pairs<T: Copy>(galaxy_list: Vec<(T, T)>) -> Vec<((T, T), (T, T))> {
     let mut pair_list: Vec<((T, T), (T, T))> = Vec::new();
     for i in 0..galaxy_list.len() {
         for j in i + 1..galaxy_list.len() {
@@ -98,7 +97,7 @@ pub fn list_to_pairs<T:Copy>(galaxy_list: Vec<(T, T)>) -> Vec<((T, T), (T, T))> 
     return pair_list;
 }
 
-pub fn get_neighbor_points((x,y): (i32,i32), diag: bool) -> Vec<(i32, i32)> {
+pub fn get_neighbor_points((x, y): (i32, i32), diag: bool) -> Vec<(i32, i32)> {
     static CARD_DELTA: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
     static DIAG_DELTA: [(i32, i32); 4] = [(-1, -1), (-1, 1), (1, -1), (1, 1)];
     let r = y;
@@ -112,7 +111,7 @@ pub fn get_neighbor_points((x,y): (i32,i32), diag: bool) -> Vec<(i32, i32)> {
     if diag {
         for i in 0..DIAG_DELTA.len() {
             let (dr, dc) = DIAG_DELTA[i];
-            neighs.push((c+dc, r + dr));
+            neighs.push((c + dc, r + dr));
         }
     }
     return neighs;
