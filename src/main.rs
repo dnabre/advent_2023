@@ -13,8 +13,8 @@
  */
 
 use std::time::Instant;
-use advent_2023::file_to_lines;
 
+use advent_2023::file_to_lines;
 
 const ANSWER: (&str, &str) = ("33122", "32312");
 
@@ -85,18 +85,6 @@ fn part2(input_file: &str) -> String {
     return sum.to_string();
 }
 
-fn day13_tally_score(sum: usize, h_idx: Option<usize>, v_idx: Option<usize>) -> usize {
-    let mut sum_delta = 0;
-    if let Some(q) = h_idx {
-        sum_delta += 100 * q;
-    } else if let Some(q) = v_idx {
-        sum_delta += q;
-    } else {
-        panic!("reflection index not found!")
-    }
-    return sum + sum_delta;
-}
-
 
 fn bit_pack_both_orders(p: &str) -> (Vec<u32>, Vec<u32>) {
     let mut cols: Vec<u32> = vec![0; p.split_once("\n").unwrap().0.len()];
@@ -113,6 +101,18 @@ fn bit_pack_both_orders(p: &str) -> (Vec<u32>, Vec<u32>) {
         n
     }).collect();
     return (rows, cols);
+}
+
+fn day13_tally_score(sum: usize, h_idx: Option<usize>, v_idx: Option<usize>) -> usize {
+    let mut sum_delta = 0;
+    if let Some(q) = h_idx {
+        sum_delta += 100 * q;
+    } else if let Some(q) = v_idx {
+        sum_delta += q;
+    } else {
+        panic!("reflection index not found!")
+    }
+    return sum + sum_delta;
 }
 
 fn get_reflection_index(seq: &[u32]) -> Option<usize> {
