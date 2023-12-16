@@ -1,22 +1,21 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(dead_code)]
-#![allow(unused_assignments)]
-#![allow(unreachable_code)]
+// #![allow(unused_variables)]
+// #![allow(unused_imports)]
+// #![allow(unused_mut)]
+// #![allow(dead_code)]
+// #![allow(unused_assignments)]
+// #![allow(unreachable_code)]
 
 /*
     Advent of Code 2023: Day 14
         part1 answer:   110779
-        part2 answer:
+        part2 answer:   86069
 
  */
 
 
-
 use std::time::Instant;
 
-const ANSWER: (&str, &str) = ("110779", "252782");
+const ANSWER: (&str, &str) = ("110779", "86069");
 
 fn main() {
     let _filename_test1 = "data/day14/test_input_01.txt";
@@ -30,7 +29,7 @@ fn main() {
     let duration1 = start1.elapsed();
 
     let start2 = Instant::now();
-    let answer2 = part2(_filename_test2);
+    let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
     // println!("Advent of Code, Day 14");
@@ -40,18 +39,18 @@ fn main() {
     if ANSWER.0 != answer1 {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
-    //
-    // println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
-    // if ANSWER.1 != answer2 {
-    //     println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
-    // }
+
+    println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
+    if ANSWER.1 != answer2 {
+        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
+    }
     println!("    ---------------------------------------------");
 }
 
 
+
 fn part1(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
-    let max_cols = lines[0].len();
 
     let mut grid: Vec<Vec<char>> = Vec::new();
     for i in 0..lines.len() {
@@ -60,32 +59,9 @@ fn part1(input_file: &str) -> String {
     }
 
     //north tilt
-    for y in 0..grid.len() {
-        for x in 0..grid[0].len() {
-            let ch = grid[y][x];
-            if ch != 'O'  || y == 0{
-                continue;
-            }
-            let mut empty_length =0;
-            let mut o_y = y;
-            while o_y >0  {
-                let ch = grid[o_y-1][x];
-                if ch == '.' {
-                    o_y -= 1;
-                }else {
-                    // hit something, so must stop
-                    break;
-                }
-            }
-            if o_y != y {
-                grid[o_y][x] = 'O';
-                grid[y][x]='.';
-            }
-        }
-    }
+    tilt_north(&mut grid);
 
-
-let answer = total_load( &grid);
+    let answer = total_load(&grid);
 
     return answer.to_string();
 }
@@ -94,12 +70,73 @@ let answer = total_load( &grid);
 fn part2(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
 
+    let mut grid: Vec<Vec<char>> = Vec::new();
+    for i in 0..lines.len() {
+        let a = advent_2023::str_to_char_vec(&lines[i]);
+        grid.push(a);
+    }
 
-    let answer = 0;
+
+    const NUM_CYCLES:usize =1000;
+    for _ in 0..NUM_CYCLES {
+        tilt_north(&mut grid);        // North Tilt
+        grid = rotate_clockwise(&grid);         // North->West
+        tilt_north(&mut grid);       // West Tilt
+        grid = rotate_clockwise(&grid);         // West->South
+        tilt_north(&mut grid);        // South Tilt
+        grid = rotate_clockwise(&grid);         // South->East
+        tilt_north(&mut grid);        // East Tile
+        grid = rotate_clockwise(&grid);         // East->North
+    }
+
+    let answer = total_load(&grid);
+
     return answer.to_string();
 }
 
-fn print_grid(grid: &Vec<Vec<char>>) -> () {
+fn rotate_clockwise(grid: & Vec<Vec<char>>) -> Vec<Vec<char>> {
+    let mut new_grid: Vec<Vec<char>> = Vec::new();
+    for _ in 0..grid.len() {
+        new_grid.push(Vec::new());
+    }
+    for x in 0..grid[0].len() {
+        for y in (0..grid.len()).rev() {
+            let ch = grid[y][x];
+            new_grid[x].push(ch);
+        }
+    }
+    return new_grid;
+}
+
+
+fn tilt_north(grid: &mut Vec<Vec<char>>) {
+            for y in 0..grid.len() {
+                for x in 0..grid[0].len() {
+                    let ch = grid[y][x];
+                    if ch != 'O' || y == 0 {
+                        continue;
+                    }
+                    let mut o_y = y;
+                    while o_y > 0 {
+                        let ch = grid[o_y - 1][x];
+                        if ch == '.' {
+                            o_y -= 1;
+                        } else {
+                            // hit something, so must stop
+                            break;
+                        }
+                    }
+                    if o_y != y {
+                        grid[o_y][x] = 'O';
+                        grid[y][x] = '.';
+                    }
+                }
+            }
+        }
+
+
+
+fn _print_grid(grid: &Vec<Vec<char>>) -> () {
     let mut r = 10;
     for y in 0..grid.len() {
         for x in 0..grid[0].len() {
@@ -109,13 +146,13 @@ fn print_grid(grid: &Vec<Vec<char>>) -> () {
         println!("\t {r}");
         r -= 1;
     }
+    println!("----------------------------------------------");
 }
-
 
 
 fn total_load(grid: &Vec<Vec<char>>) -> usize {
     let max_rows = grid.len();
-    let mut mult = grid.len();
+    let mult = grid.len();
     let mut total_load: usize = 0;
     for r in (1..=mult).rev() {
         let mut rocks_in_row = 0;
