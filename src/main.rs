@@ -77,47 +77,17 @@ fn part2(input_file: &str) -> String {
         let a = advent_2023::str_to_char_vec(&lines[i]);
         grid.push(a);
     }
-let n_cols = grid[0].len();
-    let n_rows = grid.len();
-    println!("number of cols: {n_cols}");
-    println!("number of rows: {n_rows}");
-let col_rg:Vec<usize> = (0..grid[0].len() - 1).rev().collect();
-    println!("col_rg: {:?}", col_rg);
-let row_rg:Vec<usize> =  (0..grid.len()).collect();
-    println!("row_rg: {:?}", row_rg);
 
     const NUM_CYCLES:usize =1000;
    for n in 0..NUM_CYCLES
 {
 
      tilt_north(&mut grid);
-     rotate_west(&mut grid);
-
-    let mut g1 = grid.clone();
-    rotate_west(&mut g1);
-    let mut g2  = grid.clone();
-    tilt_west(&mut g2);
-    if !equal_grid(&g1,&g2) {
-
-        println!("-------------- start --------------");
-        _print_grid(&grid);
-        println!("--------------- end ---------------\n");
-        _compare_grid(&g1, &g2);
-        println!("grids differ on iteration: {n}");
-        return String::new();
-    } else {
-        grid = g1;
-    }
-
-
-    tilt_south(&mut grid);
+    tilt_west(&mut grid);
+       tilt_south(&mut grid);
     tilt_east(&mut grid);
 
 
-
-
-
-   //      rotate_east(&mut grid);
 
 
 
@@ -153,86 +123,6 @@ fn rotate_clockwise(grid: & Vec<Vec<char>>) -> Vec<Vec<char>> {
     return new_grid;
 }
 
-fn rotate_north(field: &mut Vec<Vec<char>>) {
-    for row in 1..field.len() {
-        'colloop:
-        for col in 0..field[row].len() {
-            if field[row][col] == 'O' && field[row - 1][col] == '.' {
-                for i in (0..row).rev() {
-                    if field[i][col] != '.' {
-                        field[i + 1][col] = 'O';
-                        field[row][col] = '.';
-                        continue 'colloop;
-                    }
-                }
-                field[0][col] = 'O';
-                field[row][col] = '.';
-            }
-        }
-    }
-}
-
-
-fn rotate_south(field: &mut Vec<Vec<char>>) {
-    let field_len = field.len();
-    for row in (0..field.len() - 1).rev() {
-        'colloop:
-        for col in 0..field[row].len() {
-            if field[row][col] == 'O' && field[row + 1][col] == '.' {
-                for i in row + 1..field.len() {
-                    if field[i][col] != '.' {
-                        field[i - 1][col] = 'O';
-                        field[row][col] = '.';
-                        continue 'colloop;
-                    }
-                }
-                field[field_len - 1][col] = 'O';
-                field[row][col] = '.';
-            }
-        }
-    }
-}
-
-fn rotate_east(field: &mut Vec<Vec<char>>) {
-    let row_len = field[0].len();
-    for col in (0..field[0].len() - 1).rev() {
-        'rowloop:
-        for row in 0..field.len() {
-            if field[row][col] == 'O' && field[row][col + 1] == '.' {
-                for i in col + 1..field[row].len() {
-                    if field[row][i] != '.' {
-                        field[row][i - 1] = 'O';
-                        field[row][col] = '.';
-                        continue 'rowloop;
-                    }
-                }
-                field[row][row_len - 1] = 'O';
-                field[row][col] = '.';
-            }
-        }
-    }
-}
-
-fn rotate_west(field: &mut Vec<Vec<char>>) {
-    for col in 1..field[0].len() {
-        'rowloop:
-        for row in 0..field.len() {
-            if field[row][col] == 'O' && field[row][col - 1] == '.' {
-                for i in (0..col).rev() {
-                    if field[row][i] != '.' {
-                        field[row][i + 1] = 'O';
-                        field[row][col] = '.';
-                        continue 'rowloop;
-                    }
-                }
-                field[row][0] = 'O';
-                field[row][col] = '.';
-            }
-        }
-    }
-}
-
-
 
 fn tilt_north(grid: &mut Vec<Vec<char>>) {
             for y in 0..grid.len() {
@@ -258,10 +148,30 @@ fn tilt_north(grid: &mut Vec<Vec<char>>) {
                 }
             }
         }
-
-
-
-
+fn tilt_west(grid: &mut Vec<Vec<char>>) {
+    for col in 1..grid[0].len() {
+        for row in 0..grid.len()  {
+            let ch = grid[row][col];
+            if ch != 'O'  {
+                continue;
+            }
+            let mut o_x = col;
+            while o_x >0 {
+                let ch = grid[row][o_x - 1];
+                if ch == '.' {
+                    o_x -= 1;
+                } else {
+                    // hit something, so must stop
+                    break;
+                }
+            }
+            if o_x != col {
+                grid[row][o_x] = 'O';
+                grid[row][col] = '.';
+            }
+        }
+    }
+}
 fn tilt_south(grid: &mut Vec<Vec<char>>) {
        for row in (0..grid.len() -1).rev() {
         for col in 0..grid[0].len() {
@@ -287,9 +197,6 @@ fn tilt_south(grid: &mut Vec<Vec<char>>) {
         }
     }
 }
-
-
-
 fn tilt_east(grid: &mut Vec<Vec<char>>) {
     for col in (0..grid[0].len() - 1).rev() {
         for row in 0..grid.len() {
@@ -315,30 +222,7 @@ fn tilt_east(grid: &mut Vec<Vec<char>>) {
     }
 }
 
-fn tilt_west(grid: &mut Vec<Vec<char>>) {
-    for col in 1..grid[0].len() {
-        for row in 0..grid.len()  {
-            let ch = grid[row][col];
-            if ch != 'O'  {
-                continue;
-            }
-            let mut o_x = col;
-            while o_x < grid[0].len() -1 {
-                let ch = grid[row][o_x - 1];
-                if ch == '.' {
-                    o_x -= 1;
-                } else {
-                    // hit something, so must stop
-                    break;
-                }
-            }
-            if o_x != col {
-                grid[row][o_x] = 'O';
-                grid[row][col] = '.';
-            }
-        }
-    }
-}
+
 
 
 
