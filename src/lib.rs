@@ -171,3 +171,48 @@ pub enum Compass {
     West,
     East
 }
+
+
+pub fn compare_grid(g1: &Vec<Vec<char>>, g2:&Vec<Vec<char>>) -> () {
+    for y in 0..g1.len() {
+        for x in 0..g1[0].len() {
+            let ch = g1[y][x];
+            print!("{ch}");
+        }
+        print!("\t  \t");
+        for x in 0..g2[0].len() {
+            let ch = g2[y][x];
+            print!("{ch}");
+        }
+        println!();
+    }
+}
+
+pub fn equal_grid(g1: &Vec<Vec<char>>, g2:&Vec<Vec<char>>) -> bool {
+    if (g1.len() != g2.len() ) || (g1[0].len() != g2[0].len()) {
+        return false;
+    }
+    for y in 0..g1.len() {
+        for x in 0..g1[0].len() {
+            let ch1 = g1[y][x];
+            let ch2 = g2[y][x];
+            if ch1 != ch2 {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+pub fn print_grid(grid: &Vec<Vec<char>>) -> () {
+    let mut r = 10;
+    for y in 0..grid.len() {
+        for x in 0..grid[0].len() {
+            let ch = grid[y][x];
+            print!("{ch}");
+        }
+        println!("\t {r}");
+        r -= 1;
+    }
+
+}

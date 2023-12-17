@@ -1,10 +1,3 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(dead_code)]
-#![allow(unused_assignments)]
-#![allow(unreachable_code)]
-#![allow(unused_labels)]
 
 /*
     Advent of Code 2023: Day 14
@@ -14,8 +7,6 @@
  */
 
 
-use std::arch::x86_64::_mm_sha1msg1_epu32;
-use std::ptr::eq;
 use std::time::Instant;
 
 const ANSWER: (&str, &str) = ("110779", "86069");
@@ -60,11 +51,10 @@ fn part1(input_file: &str) -> String {
         grid.push(a);
     }
 
-    //north tilt
+
     tilt_north(&mut grid);
 
     let answer = total_load(&grid);
-
     return answer.to_string();
 }
 
@@ -78,86 +68,54 @@ fn part2(input_file: &str) -> String {
         grid.push(a);
     }
 
-    const NUM_CYCLES:usize =1000;
-   for n in 0..NUM_CYCLES
-{
-
-     tilt_north(&mut grid);
-    tilt_west(&mut grid);
-       tilt_south(&mut grid);
-    tilt_east(&mut grid);
-
-
-
-
-
+    const NUM_CYCLES: usize = 1000;
+    for _ in 0..NUM_CYCLES {
+        tilt_north(&mut grid);
+        tilt_west(&mut grid);
+        tilt_south(&mut grid);
+        tilt_east(&mut grid);
     }
 
     let answer = total_load(&grid);
-
     return answer.to_string();
-}
-
-fn tilt_via_rotations(mut grid: &mut Vec<Vec<char>>) {
-    tilt_north(&mut grid);        // North Tilt
-    *grid = rotate_clockwise(&grid);         // North->West
-    tilt_north(&mut grid);       // West Tilt
-    *grid = rotate_clockwise(&grid);         // West->South
-    tilt_north(&mut grid);        // South Tilt
-    *grid = rotate_clockwise(&grid);         // South->East
-    tilt_north(&mut grid);        // East Tile
-    *grid = rotate_clockwise(&grid);         // East->North
-}
-
-fn rotate_clockwise(grid: & Vec<Vec<char>>) -> Vec<Vec<char>> {
-    let mut new_grid: Vec<Vec<char>> = Vec::new();
-    for _ in 0..grid.len() {
-        new_grid.push(Vec::new());
-    }
-    for x in 0..grid[0].len() {
-        for y in (0..grid.len()).rev() {
-            let ch = grid[y][x];
-            new_grid[x].push(ch);
-        }
-    }
-    return new_grid;
 }
 
 
 fn tilt_north(grid: &mut Vec<Vec<char>>) {
-            for y in 0..grid.len() {
-                for x in 0..grid[0].len() {
-                    let ch = grid[y][x];
-                    if ch != 'O' || y == 0 {
-                        continue;
-                    }
-                    let mut o_y = y;
-                    while o_y > 0 {
-                        let ch = grid[o_y - 1][x];
-                        if ch == '.' {
-                            o_y -= 1;
-                        } else {
-                            // hit something, so must stop
-                            break;
-                        }
-                    }
-                    if o_y != y {
-                        grid[o_y][x] = 'O';
-                        grid[y][x] = '.';
-                    }
-                }
-            }
-        }
-fn tilt_west(grid: &mut Vec<Vec<char>>) {
-    for col in 1..grid[0].len() {
-        for row in 0..grid.len()  {
-            let ch = grid[row][col];
-            if ch != 'O'  {
+    for y in 0..grid.len() {
+        for x in 0..grid[0].len() {
+            let ch = grid[y][x];
+            if ch != 'O' || y == 0 {
                 continue;
             }
-            let mut o_x = col;
-            while o_x >0 {
-                let ch = grid[row][o_x - 1];
+            let mut o_y = y;
+            while o_y > 0 {
+                let ch = grid[o_y - 1][x];
+                if ch == '.' {
+                    o_y -= 1;
+                } else {
+                    // hit something, so must stop
+                    break;
+                }
+            }
+            if o_y != y {
+                grid[o_y][x] = 'O';
+                grid[y][x] = '.';
+            }
+        }
+    }
+}
+
+fn tilt_west(grid: &mut Vec<Vec<char>>) {
+    for x in 1..grid[0].len() {
+        for y in 0..grid.len() {
+            let ch = grid[y][x];
+            if ch != 'O' {
+                continue;
+            }
+            let mut o_x = x;
+            while o_x > 0 {
+                let ch = grid[y][o_x - 1];
                 if ch == '.' {
                     o_x -= 1;
                 } else {
@@ -165,24 +123,25 @@ fn tilt_west(grid: &mut Vec<Vec<char>>) {
                     break;
                 }
             }
-            if o_x != col {
-                grid[row][o_x] = 'O';
-                grid[row][col] = '.';
+            if o_x != x {
+                grid[y][o_x] = 'O';
+                grid[y][x] = '.';
             }
         }
     }
 }
+
 fn tilt_south(grid: &mut Vec<Vec<char>>) {
-       for row in (0..grid.len() -1).rev() {
-        for col in 0..grid[0].len() {
-            let ch = grid[row][col];
-            if ch != 'O'  {
+    for y in (0..grid.len() - 1).rev() {
+        for x in 0..grid[0].len() {
+            let ch = grid[y][x];
+            if ch != 'O' {
                 continue;
             }
 
-            let mut o_y = row;
-            while o_y < grid.len() -1 {
-                let ch = grid[o_y + 1][col];
+            let mut o_y = y;
+            while o_y < grid.len() - 1 {
+                let ch = grid[o_y + 1][x];
                 if ch == '.' {
                     o_y += 1;
                 } else {
@@ -190,49 +149,44 @@ fn tilt_south(grid: &mut Vec<Vec<char>>) {
                     break;
                 }
             }
-            if o_y != row {
-                grid[o_y][col] = 'O';
-                grid[row][col] = '.';
+            if o_y != y {
+                grid[o_y][x] = 'O';
+                grid[y][x] = '.';
             }
         }
     }
 }
-fn tilt_east(grid: &mut Vec<Vec<char>>) {
-    for col in (0..grid[0].len() - 1).rev() {
-        for row in 0..grid.len() {
 
-            let ch = grid[row][col];
+fn tilt_east(grid: &mut Vec<Vec<char>>) {
+    for y in (0..grid[0].len() - 1).rev() {
+        for x in 0..grid.len() {
+            let ch = grid[x][y];
             if ch != 'O' {
                 continue;
             }
-            let mut o_x = col;
-            while o_x < grid[0].len() -1  {
-                let ch = grid[row][o_x+1];
+            let mut o_x = y;
+            while o_x < grid[0].len() - 1 {
+                let ch = grid[x][o_x + 1];
                 if ch == '.' {
-                    o_x +=1;
+                    o_x += 1;
                 } else {
                     break;
                 }
             }
-            if o_x != col {
-                grid[row][o_x] = 'O';
-                grid[row][col] = '.';
+            if o_x != y {
+                grid[x][o_x] = 'O';
+                grid[x][y] = '.';
             }
         }
     }
 }
 
 
-
-
-
-
-
 fn total_load(grid: &Vec<Vec<char>>) -> usize {
     let max_rows = grid.len();
-    let mult = grid.len();
+    let multiplier = grid.len();
     let mut total_load: usize = 0;
-    for r in (1..=mult).rev() {
+    for r in (1..=multiplier).rev() {
         let mut rocks_in_row = 0;
         for x in 0..grid[0].len() {
             if grid[max_rows - r][x] == 'O' {
@@ -242,55 +196,6 @@ fn total_load(grid: &Vec<Vec<char>>) -> usize {
         total_load += rocks_in_row * r;
     }
     total_load
-}
-
-fn _print_grid(grid: &Vec<Vec<char>>) -> () {
-    let mut r = 10;
-    for y in 0..grid.len() {
-        for x in 0..grid[0].len() {
-            let ch = grid[y][x];
-            print!("{ch}");
-        }
-        println!("\t {r}");
-        r -= 1;
-    }
-
-}
-fn equal_grid(g1: &Vec<Vec<char>>, g2:&Vec<Vec<char>>) -> bool {
-    if (g1.len() != g2.len() ) || (g1[0].len() != g2[0].len()) {
-        return false;
-    }
-    for y in 0..g1.len() {
-        for x in 0..g1[0].len() {
-            let ch1 = g1[y][x];
-            let ch2 = g2[y][x];
-            if ch1 != ch2 {
-                return false;
-            }
-        }
-    }
-    return true;
-}
-
-
-
-fn _compare_grid(g1: &Vec<Vec<char>>, g2:&Vec<Vec<char>>) -> () {
-    let mut r = 10;
-    for y in 0..g1.len() {
-        for x in 0..g1[0].len() {
-            let ch = g1[y][x];
-            print!("{ch}");
-        }
-        print!("\t {r:2} \t");
-        for x in 0..g2[0].len() {
-            let ch = g2[y][x];
-            print!("{ch}");
-        }
-        println!();
-
-        r -= 1;
-    }
-
 }
 
 
