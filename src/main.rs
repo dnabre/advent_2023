@@ -77,7 +77,14 @@ fn part2(input_file: &str) -> String {
         let a = advent_2023::str_to_char_vec(&lines[i]);
         grid.push(a);
     }
-
+let n_cols = grid[0].len();
+    let n_rows = grid.len();
+    println!("number of cols: {n_cols}");
+    println!("number of rows: {n_rows}");
+let col_rg:Vec<usize> = (0..grid[0].len() - 1).rev().collect();
+    println!("col_rg: {:?}", col_rg);
+let row_rg:Vec<usize> =  (0..grid.len()).collect();
+    println!("row_rg: {:?}", row_rg);
 
     const NUM_CYCLES:usize =1000;
    for n in 0..NUM_CYCLES
@@ -85,38 +92,33 @@ fn part2(input_file: &str) -> String {
 
      tilt_north(&mut grid);
      rotate_west(&mut grid);
-    // tilt_south(&mut grid);
-    //
-    //
-    //    rotate_south(&mut grid);
-    let mut g1 = grid.clone();
-    let mut g2 = grid.clone();
 
-    rotate_south(&mut g1);
-    tilt_south(&mut g2);
-    let r =equal_grid(&g1, &g2);
-    if !r {
-        _compare_grid(&g1,&g2);
+    let mut g1 = grid.clone();
+    rotate_west(&mut g1);
+    let mut g2  = grid.clone();
+    tilt_west(&mut g2);
+    if !equal_grid(&g1,&g2) {
+
+        println!("-------------- start --------------");
+        _print_grid(&grid);
+        println!("--------------- end ---------------\n");
+        _compare_grid(&g1, &g2);
+        println!("grids differ on iteration: {n}");
         return String::new();
+    } else {
+        grid = g1;
     }
 
-    grid = g1;
-     rotate_east(&mut grid);
+
+    tilt_south(&mut grid);
+    tilt_east(&mut grid);
 
 
-    /*
-    println!("---- start postioni-----");
-    _print_grid(&grid);
-    println!("-----end s position-----\n");
-    let mut g1 = grid.clone();
-    let mut g2= grid.clone();
 
-    println!("g1 ?= g2: {}",equal_grid(&g1,&g2));
-    rotate_south(&mut g1);
-    tilt_south(&mut g2);
-    _compare_grid(&g1,&g2);
-    return String::new();
-*/
+
+
+   //      rotate_east(&mut grid);
+
 
 
     }
@@ -261,17 +263,7 @@ fn tilt_north(grid: &mut Vec<Vec<char>>) {
 
 
 fn tilt_south(grid: &mut Vec<Vec<char>>) {
-    let field_len = grid.len();
-    // for row in 0..grid.len() {
-    //     for col in 0..grid[0].len() {
-    //         let ch = grid[row][col];
-    //         if ch == 'O' {
-    //             grid[row][col]= 'X';
-    //         }
-    //     }
-    // }
-
-    for row in (0..grid.len() -1).rev() {
+       for row in (0..grid.len() -1).rev() {
         for col in 0..grid[0].len() {
             let ch = grid[row][col];
             if ch != 'O'  {
@@ -291,13 +283,65 @@ fn tilt_south(grid: &mut Vec<Vec<char>>) {
             if o_y != row {
                 grid[o_y][col] = 'O';
                 grid[row][col] = '.';
-            } else {
-           //     assert_eq!(grid[row][col], 'X');
-          //      grid[row][col] = 'O';
             }
         }
     }
 }
+
+
+
+fn tilt_east(grid: &mut Vec<Vec<char>>) {
+    for col in (0..grid[0].len() - 1).rev() {
+        for row in 0..grid.len() {
+
+            let ch = grid[row][col];
+            if ch != 'O' {
+                continue;
+            }
+            let mut o_x = col;
+            while o_x < grid[0].len() -1  {
+                let ch = grid[row][o_x+1];
+                if ch == '.' {
+                    o_x +=1;
+                } else {
+                    break;
+                }
+            }
+            if o_x != col {
+                grid[row][o_x] = 'O';
+                grid[row][col] = '.';
+            }
+        }
+    }
+}
+
+fn tilt_west(grid: &mut Vec<Vec<char>>) {
+    for col in 1..grid[0].len() {
+        for row in 0..grid.len()  {
+            let ch = grid[row][col];
+            if ch != 'O'  {
+                continue;
+            }
+            let mut o_x = col;
+            while o_x < grid[0].len() -1 {
+                let ch = grid[row][o_x - 1];
+                if ch == '.' {
+                    o_x -= 1;
+                } else {
+                    // hit something, so must stop
+                    break;
+                }
+            }
+            if o_x != col {
+                grid[row][o_x] = 'O';
+                grid[row][col] = '.';
+            }
+        }
+    }
+}
+
+
+
 
 
 fn total_load(grid: &Vec<Vec<char>>) -> usize {
