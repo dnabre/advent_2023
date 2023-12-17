@@ -1,3 +1,4 @@
+use std::fmt::Display;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::str::FromStr;
@@ -20,7 +21,7 @@ pub fn file_to_lines(input_file: &str) -> Vec<String> {
 }
 
 
-pub fn file_to_single_line(input_file: &str, merge_on:Option<char>) -> String {
+pub fn file_to_single_line(input_file: &str, merge_on: Option<char>) -> String {
     let file = File::open(input_file).expect(&*format!("error opening file {}", input_file));
     let bfile = BufReader::new(file);
     let lines: Vec<String> = bfile.lines().filter_map(|x| x.ok()).collect();
@@ -28,16 +29,15 @@ pub fn file_to_single_line(input_file: &str, merge_on:Option<char>) -> String {
         return lines[0].clone();
     } else {
         let mut sb = String::new();
-        for i in 0..(lines.len()-1) {
+        for i in 0..(lines.len() - 1) {
             sb.push_str(lines[i].as_str());
-             match merge_on {
+            match merge_on {
                 None => {}
-                Some(ch) => {sb.push(ch); }
+                Some(ch) => { sb.push(ch); }
             }
-
         }
         sb.push_str(lines.last().unwrap().as_str());
-        return sb.to_string()
+        return sb.to_string();
     }
 }
 
@@ -169,50 +169,99 @@ pub enum Compass {
     North,
     South,
     West,
-    East
+    East,
+}
+impl Compass {
+
+    pub fn opposite(dir: Compass) -> Compass {
+        match dir {
+            Compass::North => {Compass::South}
+            Compass::South => {Compass::North}
+            Compass::West => {Compass::East}
+            Compass::East => {Compass::West}
+        }
 }
 
 
-pub fn compare_grid(g1: &Vec<Vec<char>>, g2:&Vec<Vec<char>>) -> () {
+    pub fn turn_to(dir: Compass, turn_to: ForwardDirection) -> Compass {
+        match turn_to {
+            ForwardDirection::Straight => { dir }
+            ForwardDirection::Left => {
+                match dir {
+                    Compass::North => { Compass::West }
+                    Compass::South => { Compass::East }
+                    Compass::West => { Compass::South }
+                    Compass::East => { Compass::North }
+                }
+            }
+            ForwardDirection::Right => {
+                match dir {
+                    Compass::North => { Compass::East }
+                    Compass::South => { Compass::West }
+                    Compass::West => { Compass::North }
+                    Compass::East => { Compass::South }
+                }
+            }
+            ForwardDirection::Back => {
+                Compass::opposite(dir)
+            }
+        }
+    }
+}
+
+
+#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+pub enum ForwardDirection {
+    Straight,
+    Left,
+    Right,
+    Back
+}
+
+
+
+
+
+pub fn compare_grid<T: Display>(g1: &Vec<Vec<T>>, g2: &Vec<Vec<T>>) -> () {
     for y in 0..g1.len() {
         for x in 0..g1[0].len() {
-            let ch = g1[y][x];
-            print!("{ch}");
+            let ch = &g1[y][x];
+            print!("{}", *ch);
         }
         print!("\t  \t");
         for x in 0..g2[0].len() {
-            let ch = g2[y][x];
-            print!("{ch}");
+            let ch = &g2[y][x];
+            print!("{}", *ch);
         }
         println!();
     }
 }
 
-pub fn equal_grid(g1: &Vec<Vec<char>>, g2:&Vec<Vec<char>>) -> bool {
-    if (g1.len() != g2.len() ) || (g1[0].len() != g2[0].len()) {
+pub fn equal_grid<T: std::cmp::PartialEq>(g1: &Vec<Vec<T>>, g2: &Vec<Vec<T>>) -> bool {
+    if (g1.len() != g2.len()) || (g1[0].len() != g2[0].len()) {
         return false;
     }
     for y in 0..g1.len() {
         for x in 0..g1[0].len() {
-            let ch1 = g1[y][x];
-            let ch2 = g2[y][x];
-            if ch1 != ch2 {
-                return false;
+            if g1[y][x] != g2[y][x] {
+                false;
             }
         }
     }
+
     return true;
 }
 
-pub fn print_grid(grid: &Vec<Vec<char>>) -> () {
-    let mut r = 10;
-    for y in 0..grid.len() {
-        for x in 0..grid[0].len() {
-            let ch = grid[y][x];
-            print!("{ch}");
-        }
-        println!("\t {r}");
-        r -= 1;
+pub fn print_grid<T: std::fmt::Display>(grid: &Vec<Vec<T>>) -> () {
+    if grid.len() == 0 || grid[0].len() == 0 {
+        println!(" Error: trying to print empty grid");
     }
 
+    for y in 0..grid.len() {
+        for x in 0..grid[0].len() {
+            print!("{}", grid[y][x]);
+        }
+        println!();
+
+    }
 }
