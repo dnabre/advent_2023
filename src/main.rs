@@ -33,7 +33,7 @@ fn main() {
     let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
-    //println!("Advent of Code, Day 16");
+    println!("Advent of Code, Day 16");
     println!("    ---------------------------------------------");
 
     println!("\t Part 1: {:14} time: {:?}", answer1, duration1);
@@ -169,34 +169,43 @@ fn get_number_energized_from_start(start: Beam, o_grid: &Vec<Vec<MirrorType>>) -
 
         let pos = beam.pos;
         let tile = o_grid[pos.y][pos.x];
-        let dirs = match (beam.dir, tile) {
+
+        // Pair of directions, if only one direction it is repeated. Ugly but works.
+        let (a,b) = match (beam.dir, tile) {
             (d, MirrorType::Nothing) => {
-                vec![d]
+                (d,d)
             }
             (_, MirrorType::Hort) => {
-                vec![Compass::West, Compass::East]
+                (Compass::West, Compass::East)
             }
             (_, MirrorType::Vert) => {
-                vec![Compass::North, Compass::South]
+                (Compass::North, Compass::South)
             }
             (Compass::North, MirrorType::UpRight) | (Compass::South, MirrorType::DownLeft) => {
-                vec![Compass::East]
+                (Compass::East, Compass::East)
             }
             (Compass::South, MirrorType::UpRight) | (Compass::North, MirrorType::DownLeft) => {
-                vec![Compass::West]
+                (Compass::West, Compass::West)
             }
             (Compass::West, MirrorType::UpRight) | (Compass::East, MirrorType::DownLeft) => {
-                vec![Compass::South]
+                (Compass::South,Compass::South)
             }
             (Compass::East, MirrorType::UpRight) | (Compass::West, MirrorType::DownLeft) => {
-                vec![Compass::North]
+                (Compass::North, Compass::North)
             }
         };
-        for d in dirs {
-            beam.dir = d;
+
+            beam.dir = a;
             if let Some(beam) = beam.forward(num_rows, num_cols) {
                 queue.push_back(beam.clone());
             }
+            if a != b {
+                beam.dir = b;
+                if let Some(beam) = beam.forward(num_rows, num_cols) {
+                    queue.push_back(beam.clone());
+                }
+
+
         }
     }
     return energized.len();
