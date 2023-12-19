@@ -23,7 +23,7 @@
 | [Day 15: Lens Library](https://adventofcode.com/2023/day/15)                   | hash table          | * | * |
 | [Day 16: The Floor Will Be Lava](https://adventofcode.com/2023/day/16)         | integral raytracing | * | * |
 | [Day 17: Clumsy Crucible](https://adventofcode.com/2023/day/17)                | graph search        | * | * |
-| [Day 18: Lavaduct Lagoon](https://adventofcode.com/2023/day/18)                |                     | _ | _ |
+| [Day 18: Lavaduct Lagoon](https://adventofcode.com/2023/day/18)                | Pike's Theorem      | * | * |
 | [Day 19: Aplenty](https://adventofcode.com/2023/day/19)                        |                     | _ | _ |
 
 
