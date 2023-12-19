@@ -182,6 +182,19 @@ impl Compass {
         }
 }
 
+    pub fn progress((x,y):(usize,usize), dir:Compass, (max_rows,max_cols): (usize,usize)) -> Option<(usize,usize)> {
+
+
+        match dir {
+            Compass::North
+                    if y > 0  => { return Some((x,y-1));}
+            Compass::South if y +1 < max_rows   => { return Some((x,y+1));}
+            Compass::West if x > 0 => { return Some((x-1, y));}
+            Compass::East if x + 1 < max_cols => {return Some((x+1,y));}
+            _ => {return None; }
+        };
+    }
+
 
     pub fn turn_to(dir: Compass, turn_to: ForwardDirection) -> Compass {
         match turn_to {
