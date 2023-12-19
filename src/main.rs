@@ -9,18 +9,19 @@
     Advent of Code 2023: Day 17
         part1 answer:
         part2 answer:
+
+        817 is too high
  */
 
+
 use std::cmp::Ordering;
-use std::collections::{BinaryHeap, HashMap, HashSet, VecDeque};
-use std::fmt::{Debug, Display, Formatter};
-use std::fs::File;
-use std::io::{BufRead, BufReader};
-use std::ops::Range;
+use std::collections::{BinaryHeap, HashSet};
+use std::fmt::{Debug, Display};
+use std::hash::Hash;
 use std::path::Component::ParentDir;
-use std::str::FromStr;
 use std::time::Instant;
-use advent_2023::{Compass, ForwardDirection};
+
+use advent_2023::Direction;
 
 const ANSWER: (&str, &str) = ("814", "974");
 
@@ -55,142 +56,147 @@ fn main() {
 }
 
 
-enum TurningOptions {
-    Straight,
-    Left,
-    Right
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
+struct Coord {
+    row: usize,
+    col: usize,
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-struct State {
-    pos: (usize,usize),
-    heat_lost: i32,
-    direction:Compass,
-    inertia: i32
-}
-
-impl State {
-
-}
-
-
-
-impl Ord for State {
-    fn cmp(&self, other: &Self) -> Ordering {
-        self.heat_lost.cmp(&other.heat_lost)
+impl Coord {
+    fn forward(&self, dir: &Direction, rows: usize, cols: usize) -> Option<Self> {
+        let coord = match dir {
+            Direction::Up if self.row > 0 => Coord {
+                row: self.row - 1,
+                col: self.col,
+            },
+            Direction::Down if self.row < (rows - 1) => Coord {
+                row: self.row + 1,
+                col: self.col,
+            },
+            Direction::Left if self.col > 0 => Coord {
+                row: self.row,
+                col: self.col - 1,
+            },
+            Direction::Right if self.col < (cols - 1) => Coord {
+                row: self.row,
+                col: self.col + 1,
+            },
+            _ => return None,
+        };
+        Some(coord)
     }
 }
 
-impl PartialOrd for State {
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+struct Crucible {
+    cost: u32,
+    pos: Coord,
+    dir: Direction,
+    moves_in_dir: u32,
+}
+
+
+impl Ord for Crucible {
+    fn cmp(&self, other: &Self) -> Ordering {
+        other.cost.cmp(&self.cost)
+    }
+}
+
+
+impl PartialOrd for Crucible {
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
+impl Crucible {
+    fn successors(&self, grid: &Vec<Vec<u32>>) -> Vec<Self> {
+        let max_rows = grid.len();
+        let max_cols = grid[0].len();
+
+        let mut successors = Vec::new();
+
+        for dir in advent_2023::DIRECTION_ARRAY {
+            if self.dir == dir && self.moves_in_dir == 3 {
+                //max inertia
+                continue;
+            }
+
+            if self.dir.opposite() == dir {
+                //can't go backwards
+                continue;
+            }
+
+            if let Some(pos) = self.pos.forward(&dir, max_rows, max_cols) {
+                let cost = self.cost + grid[pos.row][pos.col];
+                let moves_in_dir = if self.dir == dir {
+                    self.moves_in_dir + 1
+                } else {
+                    1
+                };
+                successors.push(Crucible {
+                    pos, cost, dir, moves_in_dir
+                });
+            }
+        }
+        return successors;
+    }
+}
+
+
 fn part1(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
-    let mut grid: Vec<Vec<i32>> = Vec::new();
-    for l in &lines {
-        let mut num_lines: Vec<i32> = l.chars().map(|ch| (ch as i32) - ('0' as i32)).collect();
+    let grid = advent_2023::parse_grid(&lines);
+    let grid = advent_2023::convert_grid_using(&grid, |ch| (ch as u8 - '0' as u8) as u32);
 
-        grid.push(num_lines);
-    }
+
     let max_rows = grid.len();
     let max_cols = grid[0].len();
 
+    let goal = Coord {
+        row: grid.len() -1,
+        col: grid[0].len() -1
+    };
+    println!("Goal Coord: {:?}", goal);
 
-    let mut queue:BinaryHeap<State> = BinaryHeap::new();
+    let mut pq = BinaryHeap::new();
+  //  let mut seen = HashSet::new();
 
-    let start_point = (0,0);
-    let goal_point:(usize,usize)= ((grid[0].len()-1) ,( grid.len() -1) );
-    println!("finding path from {:?} to {:?} minimizing heat lost", start_point, goal_point);
-    advent_2023::print_grid(&grid);
-    let mut visited:HashSet<State> = HashSet::new();
 
-    let mut start_state = State {
-        pos: (0, 0),
-        heat_lost: 0,
-        direction: Compass::East,
-        inertia: 0,
+
+    let right = Crucible{
+        cost: grid[0][1] ,
+        dir: Direction::Right,
+        pos: Coord {row: 0, col : 1},
+        moves_in_dir: 1
     };
 
-    queue.push(start_state);
+    let down = Crucible{
+        cost: grid[1][0],
+        dir:Direction::Down,
+        pos: Coord{row: 0, col: 1},
+        moves_in_dir: 1
+    };
 
-    let mut current_state  = start_state;
-    while !queue.is_empty()  {
-        current_state = queue.pop().unwrap();
-    //    println!("current state: {:?}   queue_size: {}, visited: {}", current_state, queue.len(), visited.len());
-        visited.insert(current_state);
+    // two possible moves from start, right & down. Cost of cell we start in only matters if we back into it.
+    pq.push(right);
+    pq.push(down);
 
+    while let Some(crucible) = pq.pop() {
+        if crucible.pos == goal {
+            println!("Found goal @ {:?} with total heat cost: {}", crucible.pos, crucible.cost);
+            return crucible.cost.to_string();
 
-        if current_state.pos == goal_point {
-            break;
-       }
-        // expand frontier from current_state
-        let mut new_state = State{
-            pos: (0, 0),
-            heat_lost: 0,
-            direction: Compass::North,
-            inertia: 0,
-        };
-
-        // straight
-        if current_state.inertia < 3 {
-            let new_pos = advent_2023::Compass::progress(current_state.pos, current_state.direction, (max_rows,max_cols));
-            if let Some((x,y)) = new_pos {
-                let new_state = State {
-                    pos: (x, y),
-                    heat_lost: current_state.heat_lost + grid[y as usize][x as usize],
-                    direction: current_state.direction,
-                    inertia: current_state.inertia + 1,
-                };
-                if !visited.contains(&new_state) {
-                queue.push(new_state);
-                    }
-            }
         }
 
-        // left
-        let new_direction = Compass::turn_to(current_state.direction, ForwardDirection::Left);
-        let new_pos = Compass::progress(current_state.pos, new_direction, (max_rows,max_cols));
-        if let Some((x,y)) = new_pos {
-            let new_state = State {
-                pos: (x, y),
-                heat_lost: current_state.heat_lost + grid[y as usize][x as usize],
-                direction: new_direction,
-                inertia: 0,
-            };
-            if !visited.contains(&new_state) {
-                queue.push(new_state);
-            }
+        for successor in crucible.successors(&grid) {
+      //      if seen.insert((successor.pos, successor.dir, successor.moves_in_dir)) {
+                // if it was already in the set, the insert would return false
+                pq.push(successor);
+       //     }
         }
-
-        // right
-        let new_direction = Compass::turn_to(current_state.direction, ForwardDirection::Right);
-        let new_pos = Compass::progress(current_state.pos, new_direction, (max_rows,max_cols));
-        if let Some((x,y)) = new_pos {
-            let new_state = State {
-                pos: (x, y),
-                heat_lost: current_state.heat_lost + grid[y as usize][x as usize],
-                direction: new_direction,
-                inertia: 0,
-            };
-            if !visited.contains(&new_state) {
-                queue.push(new_state);
-            }
-        }
-
-
-
-
-
-
-
-
     }
-    println!("minimum heat lost: {}", current_state.heat_lost);
-
-
 
 
     let answer = 0;

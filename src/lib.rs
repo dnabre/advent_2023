@@ -163,6 +163,25 @@ pub fn str_to_char_vec(s: &str) -> Vec<char> {
     }
     return r_vec;
 }
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Clone, Copy)]
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+pub const  DIRECTION_ARRAY: [Direction; 4] = [Direction::Up, Direction::Down, Direction::Left, Direction::Right];
+
+impl Direction {
+    pub fn opposite(&self) -> Self {
+        match self {
+            Direction::Up => Direction::Down,
+            Direction::Down => Direction::Up,
+            Direction::Left => Direction::Right,
+            Direction::Right => Direction::Left,
+        }
+    }
+}
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
 pub enum Compass {
@@ -271,10 +290,11 @@ pub fn print_grid<T: std::fmt::Display>(grid: &Vec<Vec<T>>) -> () {
     }
 
     for y in 0..grid.len() {
-        for x in 0..grid[0].len() {
-            print!("{}", grid[y][x]);
+        for x in 0..grid[0].len()-1 {
+            print!("{} ", grid[y][x]);
         }
-        println!();
+        println!("{}", grid[y].last().unwrap());
+
 
     }
 }
