@@ -265,3 +265,13 @@ pub fn print_grid<T: std::fmt::Display>(grid: &Vec<Vec<T>>) -> () {
 
     }
 }
+
+pub fn parse_grid(lines: &Vec<String>) -> Vec<Vec<char>> {
+    let mut grid: Vec<Vec<char>> = Vec::new();
+    for l in lines
+    {
+        let line = str_to_char_vec(l);
+        grid.push(line);
+    }
+    grid
+}
