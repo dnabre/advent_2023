@@ -320,3 +320,9 @@ pub fn convert_grid_using<T: Copy,O>(grid: &Vec<Vec<T>>, convert: fn(T) -> O) ->
     }
     return o_grid;
 }
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+pub struct Coord {
+    pub x: i64,
+    pub y: i64
+}
