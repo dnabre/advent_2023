@@ -1,9 +1,9 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(dead_code)]
-#![allow(unused_assignments)]
-#![allow(unreachable_code)]
+// #![allow(unused_variables)]
+// #![allow(unused_imports)]
+// #![allow(unused_mut)]
+// #![allow(dead_code)]
+// #![allow(unused_assignments)]
+// #![allow(unreachable_code)]
 
 /*
     Advent of Code 2023: Day 16
@@ -14,7 +14,6 @@
 use std::collections::{HashSet, VecDeque};
 use std::fmt::{Debug, Display, Formatter};
 use std::time::Instant;
-use advent_2023::get_neighbor_points;
 
 const ANSWER: (&str, &str) = ("7632", "8023");
 
@@ -92,10 +91,10 @@ struct Beam {
 impl Beam {
     fn forward(mut self, max_rows: usize, max_cols: usize) -> Option<Self> {
         match self.dir {
-            Direction::Up if self.pos.y > 0 => { self.pos.y -= 1 }
-            Direction::Down if self.pos.y < max_rows - 1 => { self.pos.y += 1 }
-            Direction::Left if self.pos.x > 0 => { self.pos.x -= 1 }
-            Direction::Right if self.pos.x < max_cols - 1 => { self.pos.x += 1 }
+            Direction::North if self.pos.y > 0 => { self.pos.y -= 1 }
+            Direction::South if self.pos.y < max_rows - 1 => { self.pos.y += 1 }
+            Direction::West if self.pos.x > 0 => { self.pos.x -= 1 }
+            Direction::East if self.pos.x < max_cols - 1 => { self.pos.x += 1 }
             _ => return None
         }
 
@@ -112,10 +111,10 @@ struct Coord {
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
 enum Direction {
-    Up,
-    Down,
-    Left,
-    Right,
+    North,
+    South,
+    West,
+    East,
 }
 
 fn part1(input_file: &str) -> String {
@@ -123,13 +122,13 @@ fn part1(input_file: &str) -> String {
 
     let grid = advent_2023::parse_grid(&lines);
 
-    let mut o_grid = convert_grid_using(&grid, |ch| MirrorType::from_char(ch) );
+    let o_grid = convert_grid_using(&grid, |ch| MirrorType::from_char(ch));
 
     let start = Beam {
         pos: Coord { x: 0, y: 0 },
-        dir: Direction::Right,
+        dir: Direction::East,
     };
-    let answer = get_number_energized_from_start(start, & o_grid );
+    let answer = get_number_energized_from_start(start, &o_grid);
 
     return answer.to_string();
 }
@@ -137,12 +136,11 @@ fn part1(input_file: &str) -> String {
 fn convert_grid_using(grid: &Vec<Vec<char>>, convert: fn(char) -> MirrorType) -> Vec<Vec<MirrorType>> {
     let mut o_grid = Vec::with_capacity(grid.len());
     for row in grid {
-        let mut grid_row:Vec<MirrorType> = Vec::with_capacity(row.len());
+        let mut grid_row: Vec<MirrorType> = Vec::with_capacity(row.len());
         for r in row {
             grid_row.push(convert(*r));
         }
         o_grid.push(grid_row);
-
     }
     return o_grid;
 }
@@ -152,41 +150,24 @@ fn part2(input_file: &str) -> String {
 
     let grid = advent_2023::parse_grid(&lines);
 
-    let mut o_grid = convert_grid_using(&grid, |ch| MirrorType::from_char(ch) );
-
-    let start = Beam {
-        pos: Coord { x: 0, y: 0 },
-        dir: Direction::Right,
-    };
+    let o_grid = convert_grid_using(&grid, |ch| MirrorType::from_char(ch));
 
     let max_rows = o_grid.len();
     let max_cols = o_grid[0].len();
-    println!("grid size: {max_rows} rows by {max_cols} columns");
 
-    let top_row = (0..max_cols).map(|cx| Beam{ pos: Coord{x: cx, y: 0 }, dir:Direction::Down});
+    let starts = (0..max_cols).map(|cx| Beam { pos: Coord { x: cx, y: 0 }, dir: Direction::South }).chain((0..max_cols).map(|cx| Beam { pos: Coord { x: cx, y: max_rows - 1 }, dir: Direction::North })).chain((0..max_rows).map(|cy| Beam { pos: Coord { x: 0, y: cy }, dir: Direction::East })).chain((0..max_rows).map(|cy| Beam { pos: Coord { x: max_cols - 1, y: cy }, dir: Direction::West }));
 
-    let bot_row = (0..max_cols).map(|cx| Beam{ pos: Coord{x: cx, y: max_rows-1,}, dir:Direction::Up});
-
-    let left_row = (0..max_rows).map(|cy| Beam{ pos: Coord{ x: 0, y: cy }, dir:Direction::Right});
-
-    let right_row = (0..max_rows).map(|cy| Beam{ pos: Coord{ x: max_cols -1, y: cy }, dir:Direction::Left   });
-
-    let starts:Vec<Beam> = top_row.chain(bot_row).chain(left_row).chain(right_row).collect();
-
-    let energized_counts = starts.iter().map(|b| get_number_energized_from_start(*b, &o_grid)).max();
-
+    let energized_counts = starts.map(|b| get_number_energized_from_start(b, &o_grid)).max();
 
 
     let answer = energized_counts.unwrap();
     return answer.to_string();
-
 }
 
 
-
-fn get_number_energized_from_start(start: Beam, o_grid: & Vec<Vec<MirrorType>> ) -> usize {
+fn get_number_energized_from_start(start: Beam, o_grid: &Vec<Vec<MirrorType>>) -> usize {
     let num_rows: usize = o_grid.len();
-    let num_cols= o_grid[0].len();
+    let num_cols = o_grid[0].len();
 
 
     let mut queue: VecDeque<Beam> = VecDeque::new();
@@ -209,22 +190,22 @@ fn get_number_energized_from_start(start: Beam, o_grid: & Vec<Vec<MirrorType>> )
                 vec![d]
             }
             (_, MirrorType::Hort) => {
-                vec![Direction::Left, Direction::Right]
+                vec![Direction::West, Direction::East]
             }
             (_, MirrorType::Vert) => {
-                vec![Direction::Up, Direction::Down]
+                vec![Direction::North, Direction::South]
             }
-            (Direction::Up, MirrorType::UpRight) | (Direction::Down, MirrorType::DownLeft) => {
-                vec![Direction::Right]
+            (Direction::North, MirrorType::UpRight) | (Direction::South, MirrorType::DownLeft) => {
+                vec![Direction::East]
             }
-            (Direction::Down, MirrorType::UpRight) | (Direction::Up, MirrorType::DownLeft) => {
-                vec![Direction::Left]
+            (Direction::South, MirrorType::UpRight) | (Direction::North, MirrorType::DownLeft) => {
+                vec![Direction::West]
             }
-            (Direction::Left, MirrorType::UpRight) | (Direction::Right, MirrorType::DownLeft) => {
-                vec![Direction::Down]
+            (Direction::West, MirrorType::UpRight) | (Direction::East, MirrorType::DownLeft) => {
+                vec![Direction::South]
             }
-            (Direction::Right, MirrorType::UpRight) | (Direction::Left, MirrorType::DownLeft) => {
-                vec![Direction::Up]
+            (Direction::East, MirrorType::UpRight) | (Direction::West, MirrorType::DownLeft) => {
+                vec![Direction::North]
             }
         };
         for d in dirs {
@@ -234,5 +215,5 @@ fn get_number_energized_from_start(start: Beam, o_grid: & Vec<Vec<MirrorType>> )
             }
         }
     }
-    return energized.len()
+    return energized.len();
 }

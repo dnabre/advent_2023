@@ -164,7 +164,7 @@ pub fn str_to_char_vec(s: &str) -> Vec<char> {
     return r_vec;
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
 pub enum Compass {
     North,
     South,
