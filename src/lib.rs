@@ -275,3 +275,15 @@ pub fn parse_grid(lines: &Vec<String>) -> Vec<Vec<char>> {
     }
     grid
 }
+
+pub fn convert_grid_using<T: Copy,O>(grid: &Vec<Vec<T>>, convert: fn(T) -> O) -> Vec<Vec<O>> {
+    let mut o_grid = Vec::with_capacity(grid.len());
+    for row in grid {
+        let mut grid_row: Vec<O> = Vec::with_capacity(row.len());
+        for r in row {
+            grid_row.push(convert(*r));
+        }
+        o_grid.push(grid_row);
+    }
+    return o_grid;
+}
