@@ -77,7 +77,7 @@ impl State {
 
 impl Ord for State {
     fn cmp(&self, other: &Self) -> Ordering {
-        self.heat_lost.cmp(&other.heat_lost).reverse()
+        self.heat_lost.cmp(&other.heat_lost)
     }
 }
 
