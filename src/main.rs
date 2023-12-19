@@ -14,6 +14,7 @@
 use std::collections::{HashSet, VecDeque};
 use std::fmt::{Debug, Display, Formatter};
 use std::time::Instant;
+use advent_2023::Compass;
 
 const ANSWER: (&str, &str) = ("7632", "8023");
 
@@ -85,16 +86,16 @@ impl Display for MirrorType {
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
 struct Beam {
     pos: Coord,
-    dir: Direction,
+    dir: Compass,
 }
 
 impl Beam {
     fn forward(mut self, max_rows: usize, max_cols: usize) -> Option<Self> {
         match self.dir {
-            Direction::North if self.pos.y > 0 => { self.pos.y -= 1 }
-            Direction::South if self.pos.y < max_rows - 1 => { self.pos.y += 1 }
-            Direction::West if self.pos.x > 0 => { self.pos.x -= 1 }
-            Direction::East if self.pos.x < max_cols - 1 => { self.pos.x += 1 }
+            Compass::North if self.pos.y > 0 => { self.pos.y -= 1 }
+            Compass::South if self.pos.y < max_rows - 1 => { self.pos.y += 1 }
+            Compass::West if self.pos.x > 0 => { self.pos.x -= 1 }
+            Compass::East if self.pos.x < max_cols - 1 => { self.pos.x += 1 }
             _ => return None
         }
 
@@ -109,40 +110,21 @@ struct Coord {
     y: usize,
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Hash)]
-enum Direction {
-    North,
-    South,
-    West,
-    East,
-}
 
 fn part1(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
-
     let grid = advent_2023::parse_grid(&lines);
 
-    let o_grid = convert_grid_using(&grid, |ch| MirrorType::from_char(ch));
+    let o_grid = advent_2023::convert_grid_using(&grid, |ch| MirrorType::from_char(ch));
 
     let start = Beam {
         pos: Coord { x: 0, y: 0 },
-        dir: Direction::East,
+        dir: Compass::East,
     };
+
     let answer = get_number_energized_from_start(start, &o_grid);
 
     return answer.to_string();
-}
-
-fn convert_grid_using(grid: &Vec<Vec<char>>, convert: fn(char) -> MirrorType) -> Vec<Vec<MirrorType>> {
-    let mut o_grid = Vec::with_capacity(grid.len());
-    for row in grid {
-        let mut grid_row: Vec<MirrorType> = Vec::with_capacity(row.len());
-        for r in row {
-            grid_row.push(convert(*r));
-        }
-        o_grid.push(grid_row);
-    }
-    return o_grid;
 }
 
 fn part2(input_file: &str) -> String {
@@ -150,12 +132,16 @@ fn part2(input_file: &str) -> String {
 
     let grid = advent_2023::parse_grid(&lines);
 
-    let o_grid = convert_grid_using(&grid, |ch| MirrorType::from_char(ch));
+    let o_grid = advent_2023::convert_grid_using(&grid, |ch| MirrorType::from_char(ch));
 
     let max_rows = o_grid.len();
     let max_cols = o_grid[0].len();
 
-    let starts = (0..max_cols).map(|cx| Beam { pos: Coord { x: cx, y: 0 }, dir: Direction::South }).chain((0..max_cols).map(|cx| Beam { pos: Coord { x: cx, y: max_rows - 1 }, dir: Direction::North })).chain((0..max_rows).map(|cy| Beam { pos: Coord { x: 0, y: cy }, dir: Direction::East })).chain((0..max_rows).map(|cy| Beam { pos: Coord { x: max_cols - 1, y: cy }, dir: Direction::West }));
+    let starts =
+        (0..max_cols).map(|cx| Beam { pos: Coord { x: cx, y: 0 }, dir: Compass::South })
+            .chain((0..max_cols).map(|cx| Beam { pos: Coord { x: cx, y: max_rows - 1 }, dir: Compass::North }))
+            .chain((0..max_rows).map(|cy| Beam { pos: Coord { x: 0, y: cy }, dir: Compass::East }))
+            .chain((0..max_rows).map(|cy| Beam { pos: Coord { x: max_cols - 1, y: cy }, dir: Compass::West }));
 
     let energized_counts = starts.map(|b| get_number_energized_from_start(b, &o_grid)).max();
 
@@ -169,13 +155,11 @@ fn get_number_energized_from_start(start: Beam, o_grid: &Vec<Vec<MirrorType>>) -
     let num_rows: usize = o_grid.len();
     let num_cols = o_grid[0].len();
 
-
     let mut queue: VecDeque<Beam> = VecDeque::new();
     let mut energized: HashSet<Coord> = HashSet::new();
     let mut seen: HashSet<Beam> = HashSet::new();
 
     queue.push_back(start);
-
     while let Some(mut beam) = queue.pop_front() {
         if seen.contains(&beam) {
             continue;
@@ -190,22 +174,22 @@ fn get_number_energized_from_start(start: Beam, o_grid: &Vec<Vec<MirrorType>>) -
                 vec![d]
             }
             (_, MirrorType::Hort) => {
-                vec![Direction::West, Direction::East]
+                vec![Compass::West, Compass::East]
             }
             (_, MirrorType::Vert) => {
-                vec![Direction::North, Direction::South]
+                vec![Compass::North, Compass::South]
             }
-            (Direction::North, MirrorType::UpRight) | (Direction::South, MirrorType::DownLeft) => {
-                vec![Direction::East]
+            (Compass::North, MirrorType::UpRight) | (Compass::South, MirrorType::DownLeft) => {
+                vec![Compass::East]
             }
-            (Direction::South, MirrorType::UpRight) | (Direction::North, MirrorType::DownLeft) => {
-                vec![Direction::West]
+            (Compass::South, MirrorType::UpRight) | (Compass::North, MirrorType::DownLeft) => {
+                vec![Compass::West]
             }
-            (Direction::West, MirrorType::UpRight) | (Direction::East, MirrorType::DownLeft) => {
-                vec![Direction::South]
+            (Compass::West, MirrorType::UpRight) | (Compass::East, MirrorType::DownLeft) => {
+                vec![Compass::South]
             }
-            (Direction::East, MirrorType::UpRight) | (Direction::West, MirrorType::DownLeft) => {
-                vec![Direction::North]
+            (Compass::East, MirrorType::UpRight) | (Compass::West, MirrorType::DownLeft) => {
+                vec![Compass::North]
             }
         };
         for d in dirs {
