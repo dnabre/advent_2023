@@ -326,3 +326,18 @@ pub struct Coord {
     pub x: i64,
     pub y: i64
 }
+
+pub fn list_displayables_to_string<T:Display>(parts:&Vec<T>) -> String{
+    let mut sb = String::new();
+    if parts.len() == 1 {
+        return format!("[{}]", parts[0]);
+    }
+    sb.push('[');
+    for i in 0..parts.len()-1 {
+        sb.push_str(format!("{}, ", parts[i]).as_str());
+    }
+    sb.push_str(format!("{}]", parts.last().unwrap()).as_str());
+
+    return sb.to_string();
+
+}
