@@ -75,18 +75,7 @@ impl Coord {
        let r = Coord {x: nx as usize, y: ny as usize};
        return Some(r);
     }
-    fn offset_unlimited(&self, dx:i32, dy:i32, max_x:usize, max_y:usize) -> Option<Coord>{
-        let (cx,cy) = (self.x,self.y);
-        let (mut nx, mut ny) = (dx + cx as i32, dy + cy as i32);
-        let (mut u_nx, u_ny);
-        if (nx < 0) || (ny < 0) {
-            (u_nx, u_ny) = (max_x - (nx.abs() as usize  % max_x), max_y - (ny.abs() as usize % max_y));
-        } else {
-            (u_nx, u_ny) = (nx as usize % max_x, ny as usize % max_y);
-        }
-        let r = Coord {x: nx as usize, y: ny as usize};
-        return Some(r);
-    }
+
 }
 
 
@@ -147,6 +136,9 @@ fn part1(input_file: &str) -> String {
 
 fn part2(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
+
+    // need to distinguish spots which mod to the same, since we need to count all that map to the same mod-vale
+
 
     let answer =0;
     return answer.to_string();
