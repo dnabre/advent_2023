@@ -66,12 +66,7 @@ pub fn get_distance_m1((x1, y1): (usize, usize), (x2, y2): (usize, usize)) -> us
     return x1.abs_diff(x2) + y1.abs_diff(y2);
 }
 
-pub static CARD_DELTA: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
-pub static DIAG_DELTA: [(i32, i32); 4] = [(-1, -1), (-1, 1), (1, -1), (1, 1)];
-
 pub fn get_neighbor_points((x, y): (i32, i32), diag: bool) -> Vec<(i32, i32)> {
-
-
     let r = y;
     let c = x;
 
@@ -88,6 +83,45 @@ pub fn get_neighbor_points((x, y): (i32, i32), diag: bool) -> Vec<(i32, i32)> {
     }
     return neighs;
 }
+
+pub static CARD_DELTA: [(i32, i32); 4] = [ (-1, 0), (0, -1),(0, 1), (1, 0)];
+pub static DIAG_DELTA: [(i32, i32); 4] = [(-1, -1), (-1, 1), (1, -1), (1, 1)];
+
+pub fn checked_neighbor_points((x, y): (usize, usize), n_rows:usize, n_cols:usize, diag: bool) -> Vec<(usize, usize)> {
+    let r = y;
+    let c = x;
+
+    let mut neighs: Vec<(usize, usize)> = Vec::new();
+    for i in 0..CARD_DELTA.len() {
+        let (dr, dc) = CARD_DELTA[i];
+        let f1:i32 = (c as i32) + dc;
+        let f2:i32 = (r as i32)  + dr;
+
+        if (f1 <0) || (f1 >= n_cols as i32) || (f2 <0) || (f2 >= n_rows as i32) {
+            continue;
+        } else {
+            neighs.push((f1 as usize, f2 as usize));
+        }
+    }
+    if diag {
+        for i in 0..DIAG_DELTA.len() {
+            let (dr, dc) = DIAG_DELTA[i];
+            let f1:i32 = (c as i32) + dc;
+            let f2:i32 = (r as i32)  + dr;
+
+            if (f1 <0) || (f1 >= n_cols as i32) || (f2 <0) || (f2 >= n_rows as i32) {
+                continue;
+            } else {
+                neighs.push((f1 as usize, f2 as usize));
+            }
+        }
+    }
+    neighs.sort();
+
+    return neighs;
+}
+
+
 
 pub fn group_newline_separated_lines(lines: &Vec<String>) -> Vec<String> {
     let mut group_vec: Vec<String> = Vec::new();
