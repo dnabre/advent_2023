@@ -66,9 +66,12 @@ pub fn get_distance_m1((x1, y1): (usize, usize), (x2, y2): (usize, usize)) -> us
     return x1.abs_diff(x2) + y1.abs_diff(y2);
 }
 
+pub static CARD_DELTA: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
+pub static DIAG_DELTA: [(i32, i32); 4] = [(-1, -1), (-1, 1), (1, -1), (1, 1)];
+
 pub fn get_neighbor_points((x, y): (i32, i32), diag: bool) -> Vec<(i32, i32)> {
-    static CARD_DELTA: [(i32, i32); 4] = [(-1, 0), (1, 0), (0, -1), (0, 1)];
-    static DIAG_DELTA: [(i32, i32); 4] = [(-1, -1), (-1, 1), (1, -1), (1, 1)];
+
+
     let r = y;
     let c = x;
 
