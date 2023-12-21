@@ -199,11 +199,8 @@ fn part1(input_file: &str) -> String {
     for part_idx in 0..parts_list.len() {
         let mut current_queue = "in";
         let part = parts_list[part_idx];
-        println!("Processing Part:\t {}", part);
         while current_queue != "A" && current_queue != "R" {
-            println!("current_queue: {}", current_queue);
             let rule_for_q = &rule_list[rule_map[current_queue]];
-            println!("rule: {}", rule_for_q);
             let mut all_rules_passed = true ;
             for r in &rule_for_q.compares {
                 let v = match r.xmas_letter {
@@ -216,23 +213,19 @@ fn part1(input_file: &str) -> String {
 
                 if ((r.op == '<') && (v < r.num)) ||((r.op == '>') && (v > r.num)) {
                     current_queue = r.queue_name.as_str();
-                    println!("\t {} {} {} : true  -> {}", v, r.op, r.num, current_queue);
                     all_rules_passed = false;
                     break;
                 }
             }
             if all_rules_passed {
                 current_queue = rule_for_q.last_queue.as_str();
-                println!("pass all tests, going to queue: {}", current_queue);
             }
         }
         if current_queue == "A" {
 
             accept_list.push(part_idx);
-            println!("placing part# {} in accept queue (now size: {})", part_idx, accept_list.len());
         } else {
             reject_list.push(part_idx);
-            println!("placing part# {} in reject queue (now size: {})", part_idx, reject_list.len());
         }
     }
 
@@ -240,7 +233,6 @@ fn part1(input_file: &str) -> String {
     for a_idx in 0..accept_list.len() {
         let part = parts_list[accept_list[a_idx]];
         let part_total = part.x + part.m + part.a + part.s;
-        println!("part: {:?} gives {}", part, part_total);
         answer += part_total;
     }
 
