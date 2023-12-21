@@ -168,31 +168,10 @@ fn parse_xmas(line: &String) -> Part {
 fn part1(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
 
+    let mut rule_map: HashMap<&str, usize> = HashMap::new();
+    let (rule_list, parts_list) = parse_everything(&lines);
+     rule_map = build_rule_map(&rule_list);
 
-    let mut rule_list:Vec<Rule> = Vec::new();
-    let mut index: usize = 0;
-
-
-    while lines[index] != "" {
-        let new_rule:Rule = parse_line(&lines[index]);
-        rule_list.push(new_rule);
-        index += 1;
-    }
-    index += 1;
-    let mut parts_list: Vec<Part> = Vec::new();
-
-
-    while index < lines.len() {
-        let p = parse_xmas(&lines[index]);
-        parts_list.push(p);
-        index += 1;
-    }
-    let parts_list = parts_list;
-
-    let mut rule_map: HashMap<&str, usize> =HashMap::new();
-    for i in 0..rule_list.len() {
-        rule_map.insert(rule_list[i].start_queue.as_str(), i);
-    }
 
     let mut accept_list:Vec<usize> = Vec::new();
     let mut reject_list:Vec<usize> = Vec::new();
@@ -239,6 +218,38 @@ fn part1(input_file: &str) -> String {
 
 
     return answer.to_string();
+}
+
+fn build_rule_map(rule_list: &Vec<Rule>) -> HashMap<&str, usize> {
+    let mut rule_map: HashMap<&str, usize> = HashMap::new();
+    for i in 0..rule_list.len() {
+        rule_map.insert(rule_list[i].start_queue.as_str(), i);
+    }
+    return rule_map;
+}
+
+fn parse_everything(lines: &Vec<String>) -> (Vec<Rule>, Vec<Part>) {
+    let mut rule_list: Vec<Rule> = Vec::new();
+    let mut index: usize = 0;
+
+
+    while lines[index] != "" {
+        let new_rule: Rule = parse_line(&lines[index]);
+        rule_list.push(new_rule);
+        index += 1;
+    }
+    index += 1;
+    let mut parts_list: Vec<Part> = Vec::new();
+
+
+    while index < lines.len() {
+        let p = parse_xmas(&lines[index]);
+        parts_list.push(p);
+        index += 1;
+    }
+    let parts_list = parts_list;
+
+        (rule_list, parts_list)
 }
 
 fn part2(input_file: &str) -> String {
