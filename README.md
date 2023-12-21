@@ -24,7 +24,7 @@
 | [Day 16: The Floor Will Be Lava](https://adventofcode.com/2023/day/16) | integral raytracing | * | * |
 | [Day 17: Clumsy Crucible](https://adventofcode.com/2023/day/17) | graph search        | * | * |
 | [Day 18: Lavaduct Lagoon](https://adventofcode.com/2023/day/18) | Pike's Theorem      | * | * |
-| [Day 19: Aplenty](https://adventofcode.com/2023/day/19)        | parsing             | * | _ |
+| [Day 19: Aplenty](https://adventofcode.com/2023/day/19)        | parsing             | * | * |
 | [Day 20: Pulse Propagation](https://adventofcode.com/2023/day/20)         | circuit sim         | _ | _ |
 | [Day 21: Step Counter](https://adventofcode.com/2023/day/21)                       | grid search         | _ | _ |
 
