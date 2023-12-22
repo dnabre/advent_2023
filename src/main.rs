@@ -8,9 +8,12 @@
 
 use std::collections::{HashSet, VecDeque};
 use std::fmt::{Display, Formatter};
+use std::path::Component::ParentDir;
 use std::time::Instant;
 
-use advent_2023::print_grid;
+use grid::Grid;
+
+use advent_2023::str_to_char_vec;
 
 /*
     Advent of Code 2023: Day 21
@@ -43,7 +46,7 @@ fn main() {
 
 
     let start2 = Instant::now();
-    let answer2 = part2(filename_part1);
+    let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
     println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
@@ -83,7 +86,7 @@ impl Display for Cell {
     }
 }
 
-#[derive(Debug,PartialEq)]
+#[derive(Debug, PartialEq)]
 struct Garden {
     start: (usize, usize),
     grid: Vec<Vec<Cell<>>>,
@@ -140,7 +143,6 @@ fn neighbors(
 }
 
 impl Garden {
-
     fn exact_steps(&self, steps: u32) -> u64 {
         let size = self.shape().0;
         // The square grid has 4 corner zones:
@@ -152,26 +154,14 @@ impl Garden {
         // |  v  |
         // +-----+
         let strictly_in_corner = |r, c| {
-            usize::min(size - 1 - r, r) + c < (size - 1) / 2
-                || usize::max(size - 1 - r, r) + c > 3 * (size - 1) / 2
+            usize::min(size - 1 - r, r) + c < (size - 1) / 2 || usize::max(size - 1 - r, r) + c > 3 * (size - 1) / 2
         };
         let in_corner = |r, c| {
-            usize::min(size - 1 - r, r) + c <= (size - 1) / 2
-                || usize::max(size - 1 - r, r) + c >= 3 * (size - 1) / 2
+            usize::min(size - 1 - r, r) + c <= (size - 1) / 2 || usize::max(size - 1 - r, r) + c >= 3 * (size - 1) / 2
         };
         // Count the plots accessible with an even/odd number of steps for the non-infinite whole grid.
-        let whole_even = self
-            .grid
-            .iter()
-            .flatten()
-            .filter(|cell| matches!(cell, Cell::GardenPlot(Some(dist)) if *dist % 2 == 0))
-            .count() as u64;
-        let whole_odd = self
-            .grid
-            .iter()
-            .flatten()
-            .filter(|cell| matches!(cell, Cell::GardenPlot(Some(dist)) if *dist % 2 == 1))
-            .count() as u64;
+        let whole_even = self.grid.iter().flatten().filter(|cell| matches!(cell, Cell::GardenPlot(Some(dist)) if *dist % 2 == 0)).count() as u64;
+        let whole_odd = self.grid.iter().flatten().filter(|cell| matches!(cell, Cell::GardenPlot(Some(dist)) if *dist % 2 == 1)).count() as u64;
         // The whole center square (3x3 with x) is repeated 1 (center) + 4 * 2k for k in 1..
         // Then another whole square (3x3 with o) is repeated 4 * (2k-1) for k in 1..
         // On the exterior of the diamond, (upper) squares are truncated.
@@ -205,49 +195,29 @@ impl Garden {
         let q = (steps - middle as u32) / size as u32;
         let r = (steps - middle as u32) % size as u32;
         assert_eq!(r, 0);
-        center
-            * (1 + 4
-            * (2..)
-            .step_by(2)
-            .take_while(|k| *k < q)
-            .map(u64::from)
-            .sum::<u64>())
-            + other
-            * 4
-            * (1..)
-            .step_by(2)
-            .take_while(|k| *k < q)
-            .map(u64::from)
-            .sum::<u64>()
-            + self
-            .grid
-            .iter()
-            .enumerate()
-            .flat_map(|(r, col)| col.iter().enumerate().map(move |(c, cell)| ((r, c), cell)))
-            .map(|((r, c), cell)| {
-                if let Cell::GardenPlot(Some(dist)) = cell {
-                    if dist % 2 == q % 2 {
-                        if in_corner(r, c) {
-                            // X
-                            u64::from(q)
-                        } else {
-                            0
-                        }
+        center * (1 + 4 * (2..).step_by(2).take_while(|k| *k < q).map(u64::from).sum::<u64>()) + other * 4 * (1..).step_by(2).take_while(|k| *k < q).map(u64::from).sum::<u64>() + self.grid.iter().enumerate().flat_map(|(r, col)| col.iter().enumerate().map(move |(c, cell)| ((r, c), cell))).map(|((r, c), cell)| {
+            if let Cell::GardenPlot(Some(dist)) = cell {
+                if dist % 2 == q % 2 {
+                    if in_corner(r, c) {
+                        // X
+                        u64::from(q)
                     } else {
-                        //  OO        O
-                        // OOO s and OOO s
-                        // OOO       OOO
-                        if strictly_in_corner(r, c) {
-                            3 * u64::from(q - 1) + 2
-                        } else {
-                            4 * u64::from(q - 1) + 4
-                        }
+                        0
                     }
                 } else {
-                    0
+                    //  OO        O
+                    // OOO s and OOO s
+                    // OOO       OOO
+                    if strictly_in_corner(r, c) {
+                        3 * u64::from(q - 1) + 2
+                    } else {
+                        4 * u64::from(q - 1) + 4
+                    }
                 }
-            })
-            .sum::<u64>()
+            } else {
+                0
+            }
+        }).sum::<u64>()
     }
     fn read_garden(input_file: &str) -> Garden {
         let lines = advent_2023::file_to_lines(input_file);
@@ -278,11 +248,7 @@ impl Garden {
     }
 
     fn exact_steps_no_infinite(&self, steps: u32) -> u64 {
-        self.grid
-            .iter()
-            .flatten()
-            .filter(|cell| matches!(cell, Cell::GardenPlot(Some(dist)) if *dist <= steps && *dist % 2 == steps % 2))
-            .count() as u64
+        self.grid.iter().flatten().filter(|cell| matches!(cell, Cell::GardenPlot(Some(dist)) if *dist <= steps && *dist % 2 == steps % 2)).count() as u64
     }
 
 
@@ -330,8 +296,6 @@ impl Garden {
             }
         }
     }
-
-
 }
 
 
@@ -392,47 +356,85 @@ fn part1(input_file: &str, from_2: bool) -> (Option<String>, Option<HashSet<Coor
     }
 }
 
-fn part2(input_file: &str) -> String {
-    let lines = advent_2023::file_to_lines(input_file);
+fn count_locations(grid: &Grid<i32>) -> usize {
+    grid.iter().filter(|x| **x > 0).count()
+}
 
-    let part1_target_spots = part1(input_file, true).1.unwrap();
-    println!("part1_target_spots: len={}", part1_target_spots.len());
+fn v_count_locations(grid: &Vec<Vec<i32>>) -> usize {
+    let mut count = 0;
+    for y in 0..grid.len() {
+        for x in 0..grid[0].len() {
+            if grid[y][x] > 0 {
+                count += 1;
+            }
+        }
+    }
+    return count;
+}
 
-    let  v_grid = advent_2023::parse_grid(&lines);
-    let rows = v_grid.len();
-    let cols = v_grid[0].len();
+fn from_grid(grid: &Grid<i32>) -> Vec<Vec<i32>> {
+    let mut ng: Vec<Vec<i32>> = Vec::new();
+    let dim = grid.cols();
 
-    println!("grid: {} rows, {} cols", rows, cols);
-
-    let mut g_o: Garden = Garden::read_garden(input_file);
-    let mut g_m: Garden = Garden::read_garden(input_file);
-
-    // let n_o = neighbors((1,4), rows, cols, false);
-    // let n_m = advent_2023::checked_neighbor_points((1,4), rows, cols, false);
-
-    assert_eq!(g_o,g_m);
-    assert_eq!(g_o.start, g_m.start);
-
-    g_o.read_distances_o();
-    g_m.read_distances_m();
-
-
-
-    let c = advent_2023::equal_grid(&g_o.grid, &g_m.grid);
-    let s_c = g_o.start == g_m.start;
-
-
-
-    let s_o = g_o.exact_steps(26_501_365);
-    let s_m = g_m.exact_steps(26_501_365);
+    for _ in 0..dim {
+        ng.push(vec![0; dim]);
+    }
+    for y in 0..dim {
+        for x in 0..dim {
+            ng[y][x] = grid[(y, x)];
+        }
+    }
+    return ng;
+}
 
 
-    let a63 = search_upto_steps(&v_grid,Coord {x: g_o.start.0 as i64, y: g_o.start.1 as i64}, 63).len();
-    let a64 = search_upto_steps(&v_grid,Coord {x: g_o.start.0 as i64, y: g_o.start.1 as i64}, 64).len();
-    //let answer = search_upto_steps(& grid, start, target_steps);
-    println!("delta = {}", a64 - a63);
-    let answer = (a63,a64);
-    return format!("{:?}", answer);
+fn count_block(grid: &Grid<i32>, is_odd: bool) -> usize {
+    grid.indexed_iter().filter(|((y, x), v)| **v != -2 && (y + x) % 2 == usize::from(is_odd)).count()
+}
+
+fn read(text: &str) -> Grid<i32> {
+    text.lines().map(|line| {
+        line.chars().map(|x| match x {
+            '#' => -2,
+            '.' => -1,
+            'S' => 0,
+            _ => panic!("Unknown char {x}"),
+        }).collect()
+    }).collect::<Vec<Vec<_>>>().into()
+}
+
+
+fn parse_grid(lines: &Vec<String>) -> Vec<Vec<i32>> {
+    let mut grid: Vec<Vec<char>> = Vec::new();
+    for l in lines {
+        let line = str_to_char_vec(l);
+        grid.push(line);
+    }
+    let n_grid = advent_2023::convert_grid_using(&grid, |ch| char_to_i(ch));
+    return n_grid;
+}
+
+fn char_to_i(x: char) -> i32 {
+    match x {
+        '#' => -2,
+        '.' => -1,
+        'S' => 0,
+        _ => panic!("Unknown char {x}"),
+    }
+}
+
+
+fn v_count_block(grid: &Vec<Vec<i32>>, is_odd: bool) -> usize {
+    let mut count: usize = 0;
+    for y in 0..grid.len() {
+        for x in 0..grid[0].len() {
+            let v = grid[y][x];
+            if v != -2 && (y + x) % 2 == usize::from(is_odd) {
+                count += 1;
+            }
+        }
+    }
+    return count;
 }
 
 fn search_upto_steps(grid: &Vec<Vec<char>>, start: Coord, target_steps: u64) -> HashSet<Coord> {
@@ -466,6 +468,23 @@ fn search_upto_steps(grid: &Vec<Vec<char>>, start: Coord, target_steps: u64) -> 
     return target_points;
 }
 
+fn expand(grid: &Grid<i32>) -> Grid<i32> {
+    let mut new_grid = Grid::new(grid.rows() * 3, grid.cols() * 3);
+    for i in 0..3 {
+        for j in 0..3 {
+            for ((y, x), v) in grid.indexed_iter() {
+                let new_val = if *v == 0 && (i != 1 || j != 1) {
+                    -1
+                } else {
+                    *v
+                };
+                new_grid[(y + i * grid.rows(), x + j * grid.cols())] = new_val;
+            }
+        }
+    }
+    new_grid
+}
+
 fn find_start(grid: &mut Vec<Vec<char>>) -> Coord {
     let max_y: usize = grid.len();
     let max_x: usize = grid[0].len();
@@ -485,4 +504,311 @@ fn find_start(grid: &mut Vec<Vec<char>>) -> Coord {
         }
     }
     return start;
+}
+
+fn steps(grid: Grid<i32>, dist: usize) -> Grid<i32> {
+    let mut grid = grid;
+    for i in 0..i32::try_from(dist).unwrap()
+    {
+
+        let mut new_grid = grid.clone();
+        for y in 0..grid.rows() {
+            for x in 0..grid.cols() {
+                if grid[(y, x)] == i {
+                    for (dy, dx) in &[(0, 1), (0, -1), (1, 0), (-1, 0)] {
+                        let ty = i32::try_from(y).unwrap() + dy;
+                        let tx = i32::try_from(x).unwrap() + dx;
+
+                        if let Some(v) = grid.get(ty, tx) {
+                            if *v >= -1 {
+                                *new_grid.get_mut(ty, tx).unwrap() = i + 1;
+                                new_grid[(y, x)] = -1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        grid = new_grid;
+    }
+    grid
+}
+
+fn compute2(text: &str) -> usize {
+    let grid = read(text);
+    count_block(&grid, true)
+}
+
+fn v_compute2(lines: &Vec<String>) -> usize {
+    let v_grid = parse_grid(&lines);
+    return v_count_block(&v_grid, true);
+}
+
+fn print_grid(grid: &Grid<i32>) {
+    for row in grid.iter_rows() {
+        for x in row {
+            let c = match x {
+                -2 => '#',
+                -1 => '.',
+                0 => 'S',
+                1.. => 'O',
+                _ => panic!("Unknown char {x}"),
+            };
+            print!("{c}");
+        }
+        println!();
+    }
+}
+
+fn print_vgrid(grid: &Vec<Vec<i32>>) {
+    for y in 0..grid.len() {
+        for x in 0..grid[0].len() {
+            let c = match grid[y][x] {
+                -2 => '#',
+                -1 => '.',
+                0 => 'S',
+                1.. => 'O',
+                _ => panic!("Unknown char {x}"),
+            };
+            print!("{c}");
+        }
+        println!();
+    }
+}
+
+fn v_grid_expand(v_grid: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+    let dim = v_grid.len();
+    let new_dim = dim * 3;
+    let mut new_grid = Vec::new();
+    for _ in 0..new_dim {
+        new_grid.push(vec![0; new_dim]);
+    }
+    for i in 0..3 {
+        for j in 0..3 {
+            let v_index = v_grid_to_index(&v_grid);
+            for ((y,x), v) in v_index {
+                   let new_val = if *v == 0 && ( i != 1 || j != 1) {
+                       -1
+                   }     else {
+                       *v
+                   };
+                    new_grid[y+i*dim][ x + j * dim] = new_val;
+                }
+            }
+        }
+    return new_grid;
+}
+
+fn v_grid_to_index(v_grid: &Vec<Vec<i32>>) -> Vec<((usize, usize), &i32)> {
+    let mut fake_index_output = Vec::new();
+    for y in 0..v_grid.len() {
+        for x in 0..v_grid[0].len() {
+            let ch = v_grid[y][x];
+            let e = ((y, x), &v_grid[y][x]);
+            fake_index_output.push(e);
+        }
+    }
+    return fake_index_output;
+}
+
+fn part2(input_file: &str) -> String {
+    let lines = advent_2023::file_to_lines(input_file);
+
+    let v_grid = parse_grid(&lines);
+
+    let text = std::fs::read_to_string(input_file).unwrap();
+    let grid = read(&text);
+    let grid = steps(grid, 65);
+
+
+    let v_grid = v_steps(v_grid,   65);
+
+
+
+
+
+    let result = compute2(&text);
+    let v_result = v_compute2(&lines);
+    println!("Full block (odd steps) = {result}\t {v_result} =->{} ", result == v_result);
+    let val = 26_501_365;
+    println!("Steps = {val}");
+
+    let grid = read(&text);
+    let v_grid = parse_grid(&lines);
+    println!("parse compare: {}", compare_v_grid_to_grid(&v_grid, &grid));
+
+    let grid = steps(grid, 65);
+
+    let v_grid = v_steps(v_grid ,65);
+    println!("steps compare: {}", compare_v_grid_to_grid(&v_grid, &grid));
+    let y_0 = count_locations(&grid);
+    let v_y_0 = v_count_locations(&v_grid);
+    println!("131*0 = 65 = {y_0}  \t {v_y_0}");
+
+    let grid = read(&text);
+    let grid = expand(&grid);
+    let v_grid = parse_grid(&lines);
+    let v_grid = v_grid_expand(&v_grid);
+    println!("compare: {}", compare_v_grid_to_grid(&v_grid, &grid));
+
+
+    let grid = steps(grid, 65 + 131);
+    let v_grid = v_steps(v_grid, 65 + 131);
+    println!("compare: {}", compare_v_grid_to_grid(&v_grid, &grid));
+
+    let y_1 = count_locations(&grid);
+    let v_y_1 = v_count_locations(&v_grid);
+    println!("131*1 + 65 = {y_1} \t {v_y_1}");
+
+    let grid = read(&text);
+    let grid = expand(&grid);
+
+    let v_grid = parse_grid(&lines);
+    let v_grid = v_grid_expand(&v_grid);
+    println!("expand 1, compare: {}", compare_v_grid_to_grid(&v_grid, &grid));
+
+    let grid = expand(&grid);
+    let v_grid = v_grid_expand(&v_grid);
+    println!("expand 2, compare: {}", compare_v_grid_to_grid(&v_grid, &grid));
+    let grid = steps(grid, 65 + 131 * 2);
+
+    let v_grid = v_steps(v_grid, 65 + 131 * 2);
+
+
+    println!("steps compare: {}", compare_v_grid_to_grid(&v_grid, &grid));
+      let y_2 = count_locations(&grid);
+    let v_y_2 = v_count_locations(&v_grid);
+    println!("131*2 + 65 = {y_2} \t {v_y_2}");
+
+
+    let a2 = y_2 - 2 * y_1 + y_0;
+    let b2 = 4 * y_1 - 3 * y_0 - y_2;
+    let c = y_0;
+
+    println!("{a2}/2 x^2 +{b2}/2 x + {c} = y");
+    println!("x=0, y={c}");
+    println!("x=1, y={}", (a2 + b2) / 2 + c);
+    println!("x=2, y={}", (4 * a2 + 2 * b2) / 2 + c);
+    println!(
+        "x=202300, y={}",
+        (202_300 * 202_300 * a2 + 202_300 * b2) / 2 + c
+    );
+
+    println!();
+    let a2 = v_y_2 - 2 * v_y_1 + v_y_0;
+    let b2 = 4 * v_y_1 - 3 * v_y_0 - v_y_2;
+    let c = v_y_0;
+
+    println!("{a2}/2 x^2 +{b2}/2 x + {c} = y");
+    println!("x=0, y={c}");
+    println!("x=1, y={}", (a2 + b2) / 2 + c);
+    println!("x=2, y={}", (4 * a2 + 2 * b2) / 2 + c);
+    println!(
+        "x=202300, y={}",
+        (202_300 * 202_300 * a2 + 202_300 * b2) / 2 + c
+    );
+
+let answer = (202_300 * 202_300 * a2 + 202_300 * b2) / 2 + c;
+
+
+
+
+
+
+    return answer.to_string();
+}
+
+fn v_steps(grid:  Vec<Vec<i32>>, dist: usize) ->  Vec<Vec<i32>> {
+   let dim = grid.len();
+
+    let mut grid = grid;
+    for i in 0..i32::try_from(dist).unwrap()
+    {
+        let mut new_grid = grid.clone();
+        for y in 0..dim {
+            for x in 0..dim {
+                if grid[y][x] == i {
+
+                    if x + 1 < dim {
+                        let ty = y;
+                        let tx = x + 1;
+                        let v = grid[ty][tx];
+                        if v >= -1 {
+                            new_grid[ty][tx] = i + 1;
+                            new_grid[y][x] = -1;
+                        }
+                    }
+
+                    if x > 0 {
+                        let ty = y;
+                        let tx = x-1;
+                        let v = grid[ty][tx];
+                        if v >= -1 {
+                            new_grid[ty][tx] = i + 1;
+                            new_grid[y][x] = -1;
+                        }
+                    }
+
+                    if y+1 < dim {
+                        let ty = y + 1;
+                        let tx = x;
+                        let v = grid[ty][tx];
+                        if v >= -1 {
+                            new_grid[ty][tx] = i + 1;
+                            new_grid[y][x] = -1;
+                        }
+                    }
+
+                    if y > 0 {
+                        let ty = y-1;
+                        let tx = x;
+                        let v = grid[ty][tx];
+                        if v >= -1 {
+                            new_grid[ty][tx] = i + 1;
+                            new_grid[y][x] = -1;
+                        }
+                    }
+                }
+            }
+        }
+        grid = new_grid;
+    }
+
+    return grid;
+}
+
+
+fn compare_v_grid_to_grid(v_g: &Vec<Vec<i32>>, g: &Grid<i32>) -> bool {
+    let dim = v_g.len();
+    let dim2 = g.cols();
+    if dim != dim2 { return false; };
+    for y in 0..dim {
+        for x in 0..dim {
+            if v_g[y][x] != g[(y, x)] {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+fn compare_w_count_v_grid_to_grid(v_g: &Vec<Vec<i32>>, g: &Grid<i32>) -> usize {
+    let dim = v_g.len();
+    let dim2 = g.rows();
+    if dim != dim2 {
+        println!("compare v_grid to grid, dims don't match: v {} vs {}", v_g.len(), g.rows());
+
+                 return 0;
+    };
+
+
+    let mut diff_count:usize = 0;
+    for y in 0..dim {
+        for x in 0..dim {
+            if v_g[y][x] != g[(y, x)] {
+                diff_count +=1;
+            }
+        }
+    }
+    return diff_count;
 }
