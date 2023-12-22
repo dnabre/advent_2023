@@ -26,7 +26,7 @@
 | [Day 18: Lavaduct Lagoon](https://adventofcode.com/2023/day/18) | Pike's Theorem      | * | * |
 | [Day 19: Aplenty](https://adventofcode.com/2023/day/19)        | parsing             | * | * |
 | [Day 20: Pulse Propagation](https://adventofcode.com/2023/day/20)         | circuit sim         | _ | _ |
-| [Day 21: Step Counter](https://adventofcode.com/2023/day/21)                       | grid search         | * | _ |
+| [Day 21: Step Counter](https://adventofcode.com/2023/day/21)                       | matrix and search   | * | * |
 
 
 Still learning Rust as I go, so this code will likely be messy and non-idiomatic. Not recommended as good examples of the language.

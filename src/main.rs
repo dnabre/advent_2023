@@ -1,11 +1,3 @@
-// #![allow(unused_variables)]
-// #![allow(unused_imports)]
-// #![allow(unused_mut)]
-// #![allow(dead_code)]
-// #![allow(unused_assignments)]
-// #![allow(unreachable_code)]
-
-
 use std::collections::{HashSet, VecDeque};
 use std::time::Instant;
 
@@ -19,7 +11,6 @@ use advent_2023::str_to_char_vec;
 */
 
 const ANSWER: (&str, &str) = ("3642", "608603023105276");
-
 
 fn main() {
     let _filename_test = "data/day21/test_input_01.txt";
@@ -76,7 +67,7 @@ impl Coord {
     }
 }
 
-fn v_count_locations(grid: &Vec<Vec<i32>>) -> usize {
+fn count_locations(grid: &Vec<Vec<i32>>) -> usize {
     let mut count = 0;
     for y in 0..grid.len() {
         for x in 0..grid[0].len() {
@@ -94,18 +85,17 @@ fn parse_grid(lines: &Vec<String>) -> Vec<Vec<i32>> {
         let line = str_to_char_vec(l);
         grid.push(line);
     }
-    let n_grid = advent_2023::convert_grid_using(&grid, |ch| char_to_i(ch));
+    let n_grid = advent_2023::convert_grid_using(&grid, |ch|
+        match ch {
+            '#' => -2,
+            '.' => -1,
+            'S' => 0,
+            _ => panic!("Unknown char {ch}"),
+        },
+    );
     return n_grid;
 }
 
-fn char_to_i(x: char) -> i32 {
-    match x {
-        '#' => -2,
-        '.' => -1,
-        'S' => 0,
-        _ => panic!("Unknown char {x}"),
-    }
-}
 
 fn search_upto_steps(grid: &Vec<Vec<char>>, start: Coord, target_steps: u64) -> HashSet<Coord> {
     let max_y = grid.len();
@@ -157,7 +147,7 @@ fn find_start(grid: &mut Vec<Vec<char>>) -> Coord {
     return start;
 }
 
-fn v_grid_expand(v_grid: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
+fn grid_expand(v_grid: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
     let dim = v_grid.len();
     let new_dim = dim * 3;
     let mut new_grid = Vec::new();
@@ -166,7 +156,7 @@ fn v_grid_expand(v_grid: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
     }
     for i in 0..3 {
         for j in 0..3 {
-            let v_index = v_grid_to_index(&v_grid);
+            let v_index = grid_to_index(&v_grid);
             for ((y, x), v) in v_index {
                 let new_val = if *v == 0 && (i != 1 || j != 1) {
                     -1
@@ -180,18 +170,18 @@ fn v_grid_expand(v_grid: &Vec<Vec<i32>>) -> Vec<Vec<i32>> {
     return new_grid;
 }
 
-fn v_grid_to_index(v_grid: &Vec<Vec<i32>>) -> Vec<((usize, usize), &i32)> {
-    let mut fake_index_output = Vec::new();
+fn grid_to_index(v_grid: &Vec<Vec<i32>>) -> Vec<((usize, usize), &i32)> {
+    let mut enum_values = Vec::new();
     for y in 0..v_grid.len() {
         for x in 0..v_grid[0].len() {
             let e = ((y, x), &v_grid[y][x]);
-            fake_index_output.push(e);
+            enum_values.push(e);
         }
     }
-    return fake_index_output;
+    return enum_values;
 }
 
-fn v_steps(grid: Vec<Vec<i32>>, dist: usize) -> Vec<Vec<i32>> {
+fn steps(grid: Vec<Vec<i32>>, dist: usize) -> Vec<Vec<i32>> {
     let dim = grid.len();
     let mut grid = grid;
     for i in 0..i32::try_from(dist).unwrap() {
@@ -259,19 +249,19 @@ fn part2(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
 
     let v_grid = parse_grid(&lines);
-    let v_grid = v_steps(v_grid, 65);
-    let v_y_0 = v_count_locations(&v_grid);
+    let v_grid = steps(v_grid, 65);
+    let v_y_0 = count_locations(&v_grid);
 
     let v_grid = parse_grid(&lines);
-    let v_grid = v_grid_expand(&v_grid);
-    let v_grid = v_steps(v_grid, 65 + 131);
-    let v_y_1 = v_count_locations(&v_grid);
+    let v_grid = grid_expand(&v_grid);
+    let v_grid = steps(v_grid, 65 + 131);
+    let v_y_1 = count_locations(&v_grid);
 
     let v_grid = parse_grid(&lines);
-    let v_grid = v_grid_expand(&v_grid);
-    let v_grid = v_grid_expand(&v_grid);
-    let v_grid = v_steps(v_grid, 65 + 131 * 2);
-    let v_y_2 = v_count_locations(&v_grid);
+    let v_grid = grid_expand(&v_grid);
+    let v_grid = grid_expand(&v_grid);
+    let v_grid = steps(v_grid, 65 + 131 * 2);
+    let v_y_2 = count_locations(&v_grid);
 
     let a2 = v_y_2 - 2 * v_y_1 + v_y_0;
     let b2 = 4 * v_y_1 - 3 * v_y_0 - v_y_2;
