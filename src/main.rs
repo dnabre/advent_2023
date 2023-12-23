@@ -1,15 +1,6 @@
-#![allow(unused_variables)]
-#![allow(unused_imports)]
-#![allow(unused_mut)]
-#![allow(dead_code)]
-#![allow(unused_assignments)]
-#![allow(unreachable_code)]
-
 use std::collections::{BTreeMap, HashMap, HashSet, VecDeque};
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
-use std::sync::atomic::AtomicU64;
-use std::sync::atomic::Ordering::SeqCst;
 use std::time::Instant;
 
 /*
@@ -20,7 +11,7 @@ use std::time::Instant;
 */
 
 const ANSWER: (&str, &str) = ("825896364", "243566897206981");
-static BUTTON_PRESS_COUNT:usize = 1000;
+static BUTTON_PRESS_COUNT: usize = 1000;
 
 fn main() {
     let _filename_test = "data/day20/test_input_01.txt";
@@ -29,7 +20,7 @@ fn main() {
     let filename_part1 = "data/day20/part1_input.txt";
     let filename_part2 = "data/day20/part2_input.txt";
 
-    // println!("Advent of Code, Day 20");
+    println!("Advent of Code, Day 20");
     println!("    ---------------------------------------------");
     let start1 = Instant::now();
     let answer1 = part1(filename_part1);
@@ -41,7 +32,7 @@ fn main() {
     }
 
     let start2 = Instant::now();
-    let answer2 = part2(filename_part1);
+    let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
     println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
@@ -72,23 +63,6 @@ struct PulseInstance {
     strength: Pulse,
     source: usize,
     dest: usize,
-}
-
-static HIGH_PULSE_COUNT: AtomicU64 = AtomicU64::new(0);
-static LOW_PULSE_COUNT: AtomicU64 = AtomicU64::new(0);
-
-impl PulseInstance {
-    fn new(strength: Pulse, source: usize, dest: usize) -> Self {
-        match strength {
-            Pulse::High => {
-                HIGH_PULSE_COUNT.fetch_add(1, SeqCst);
-            }
-            Pulse::Low => {
-                LOW_PULSE_COUNT.fetch_add(1, SeqCst);
-            }
-        }
-        Self { strength, source, dest }
-    }
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
@@ -122,9 +96,6 @@ enum Module {
     EButton(Button),
 }
 
-const FLIP_FLOP_PREFIX: u8 = 37_u8;
-const CONJ_PREFIX: u8 = 38u8;
-const BROADCAST_PREFIX: u8 = 98_u8;
 
 fn part1(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
@@ -133,26 +104,23 @@ fn part1(input_file: &str) -> String {
     let mut name_lookup: HashMap<&str, usize> = HashMap::new();
     let mut name_by_id: HashMap<usize, &str> = HashMap::new();
     let mut module_names: Vec<&str> = Vec::new();
-    // let mut output_modules: Vec<(&str, usize)> = Vec::new();
     let mut output_modules: HashSet<usize> = HashSet::new();
     let mut m_broadcast_id: Option<usize> = None;
 
     let mut assign_id = 0;
 
-    // setup button here
     let button_id = assign_id;
     let button_name = "button";
     assign_id += 1;
     name_lookup.insert(button_name, button_id);
     name_by_id.insert(button_id, button_name);
     module_names.push(button_name);
-    let mut button_s = Button { output: vec![] };
+    let button_s = Button { output: vec![] };
     modules.push(Module::EButton(button_s));
 
-
     for l in &lines {
-        let (src, dest) = l.split_once("->").unwrap();
-        let mut src = trim_module_prefix(src.trim());
+        let (src, _) = l.split_once("->").unwrap();
+        let src = trim_module_prefix(src.trim());
         module_names.push(src);
         name_by_id.insert(assign_id, src);
         name_lookup.insert(src, assign_id);
@@ -160,18 +128,15 @@ fn part1(input_file: &str) -> String {
     }
 
     let mut conj_list: Vec<usize> = Vec::new();
-    let mut id: usize = 0;
     for l in &lines {
         let (src, dest) = l.split_once("->").unwrap();
         let src = src.trim();
         let dest_list: Vec<&str> = dest.split(",").map(|s| s.trim()).collect();
 
         let src_id = name_lookup[trim_module_prefix(src)];
-
         let mut dest_ids: Vec<usize> = Vec::new();
         for i in 0..dest_list.len() {
             let key = dest_list[i];
-
             if !name_lookup.contains_key(&key) {
                 let n_dest_id = assign_id;
                 assign_id += 1;
@@ -210,11 +175,9 @@ fn part1(input_file: &str) -> String {
         };
         modules.push(m);
     }
-    let mut broadcast_id;
+    let broadcast_id;
     if let Some(b) = m_broadcast_id {
         broadcast_id = b;
-
-
         if let Module::EButton(_) = &modules[0] {
             modules[0] = Module::EButton(Button {
                 output: vec![broadcast_id],
@@ -225,17 +188,10 @@ fn part1(input_file: &str) -> String {
     }
     let broadcast_id = broadcast_id;
 
-
-    // println!("    ---------------------------------------------");
-    // println!("broadcast: {}", broadcast_id);
-    // println!("output sinks: {:?}", output_modules);
-    // println!("    ---------------------------------------------");
-
     let number_modules = modules.len();
     for i in 0..number_modules {
         if let Module::EConjunction(conj_i) = &modules[i] {
             let mut c = conj_i.clone();
-
 
             for j in 0..number_modules {
                 if i == j { continue; }
@@ -270,40 +226,29 @@ fn part1(input_file: &str) -> String {
         }
     }
 
-
-
     let mut pulse_queue: VecDeque<PulseInstance> = VecDeque::new();
-
     let button_push = PulseInstance {
         strength: Pulse::Low,
         source: button_id,
         dest: broadcast_id,
     };
 
-    let mut high_pulse_count:u64 =0;
-    let mut low_pulse_count:u64 = 0;
-
-
-    for _ in 0..BUTTON_PRESS_COUNT{
+    let mut high_pulse_count: u64 = 0;
+    let mut low_pulse_count: u64 = 0;
+    for _ in 0..BUTTON_PRESS_COUNT {
         pulse_queue.push_front(button_push);
 
         while let Some(p) = pulse_queue.pop_front() {
             match p.strength {
-                Pulse::High => {high_pulse_count +=1 }
-                Pulse::Low => { low_pulse_count +=1}
+                Pulse::High => { high_pulse_count += 1 }
+                Pulse::Low => { low_pulse_count += 1 }
             }
-            //println!("processing front of queue: \t {:?}", p);
-            let src_name = name_by_id[&p.source];
-            let dest_name = name_by_id[&p.dest];
-        //    println!("{src_name} {} > {dest_name}", p.strength);
 
             if output_modules.contains(&p.dest) {
-                let name = name_by_id[&p.dest];
-                //       println!("output {name} received pulse: {}", p.strength);
                 continue;
             }
 
-            let mut target_module = &mut modules[p.dest];
+            let target_module = &mut modules[p.dest];
             if let Module::EFlopFlop(ref mut ff) = target_module {
                 if p.strength == Pulse::Low {
                     if ff.on {
@@ -331,7 +276,7 @@ fn part1(input_file: &str) -> String {
             }
             if let Module::EConjunction(ref mut c) = target_module {
                 c.state.insert(p.source, p.strength);
-                let t = c.state.iter().all(|(k, v)| *v == Pulse::High);
+                let t = c.state.iter().all(|(_, v)| *v == Pulse::High);
                 let out_pulse = if t {
                     Pulse::Low
                 } else {
@@ -367,14 +312,7 @@ fn part1(input_file: &str) -> String {
                 }
             }
         }
-     //   println!("    ---------------------------------------------");
-
     }
-
-    println!();
-    println!("    ---------------------------------------------");
-    println!(" low  pulse count: {}", low_pulse_count);
-    println!(" high pulse count: {}", high_pulse_count);
     let answer = high_pulse_count * low_pulse_count;
     return answer.to_string();
 }
@@ -387,26 +325,23 @@ fn part2(input_file: &str) -> String {
     let mut name_lookup: HashMap<&str, usize> = HashMap::new();
     let mut name_by_id: HashMap<usize, &str> = HashMap::new();
     let mut module_names: Vec<&str> = Vec::new();
-    // let mut output_modules: Vec<(&str, usize)> = Vec::new();
-    let mut output_modules: HashSet<usize> = HashSet::new();
+       let mut output_modules: HashSet<usize> = HashSet::new();
     let mut m_broadcast_id: Option<usize> = None;
 
     let mut assign_id = 0;
 
-    // setup button here
     let button_id = assign_id;
     let button_name = "button";
     assign_id += 1;
     name_lookup.insert(button_name, button_id);
     name_by_id.insert(button_id, button_name);
     module_names.push(button_name);
-    let mut button_s = Button { output: vec![] };
+    let button_s = Button { output: vec![] };
     modules.push(Module::EButton(button_s));
 
-
     for l in &lines {
-        let (src, dest) = l.split_once("->").unwrap();
-        let mut src = trim_module_prefix(src.trim());
+        let (src, _t) = l.split_once("->").unwrap();
+        let src = trim_module_prefix(src.trim());
         module_names.push(src);
         name_by_id.insert(assign_id, src);
         name_lookup.insert(src, assign_id);
@@ -414,7 +349,6 @@ fn part2(input_file: &str) -> String {
     }
 
     let mut conj_list: Vec<usize> = Vec::new();
-    let mut id: usize = 0;
     for l in &lines {
         let (src, dest) = l.split_once("->").unwrap();
         let src = src.trim();
@@ -464,7 +398,7 @@ fn part2(input_file: &str) -> String {
         };
         modules.push(m);
     }
-    let mut broadcast_id;
+    let broadcast_id;
     if let Some(b) = m_broadcast_id {
         broadcast_id = b;
 
@@ -479,18 +413,14 @@ fn part2(input_file: &str) -> String {
     }
     let broadcast_id = broadcast_id;
 
-
-    // println!("    ---------------------------------------------");
-    // println!("broadcast: {}", broadcast_id);
-    // println!("output sinks: {:?}", output_modules);
-    // println!("    ---------------------------------------------");
+    let mut p_zg_string = None;
+    let target_output = "rx";
+    let target_output_num = name_lookup[&target_output];
 
     let number_modules = modules.len();
     for i in 0..number_modules {
         if let Module::EConjunction(conj_i) = &modules[i] {
             let mut c = conj_i.clone();
-
-
             for j in 0..number_modules {
                 if i == j { continue; }
                 match &modules[j] {
@@ -520,103 +450,49 @@ fn part2(input_file: &str) -> String {
                     }
                 }
             }
+            if c.output.contains(&target_output_num) {
+                p_zg_string = Some(name_by_id[&i]);
+            }
             modules[i] = Module::EConjunction(c);
         }
     }
 
 
-
-    //
-    // for i in 0..lines.len() {
-    //     println!("_ {i:3}\t{:5} \t {:?}", module_names[i], modules[i]);
-    //
-    // }
-
-    let zg_i = name_lookup["zg"];
-    println!("_ {zg_i:3}\t{:5} \t {:?}", module_names[zg_i], modules[zg_i]);
-
-    let zg_inputs:[usize;4] = [3,13,26,29];
-    let mut cycles:HashMap<usize, Vec<u64> >  = HashMap::new();
-    for z in zg_inputs {
-        cycles.insert(z, Vec::new());
+    let mut zg_inputs = vec![];
+    let zg_i = name_lookup[p_zg_string.unwrap()];
+    if let Module::EConjunction(c) = modules[zg_i].clone() {
+        for d in c.inputs {
+            zg_inputs.push(d);
+        }
     }
-    println!("z: {:?}", cycles);
-    let mut pulse_queue: VecDeque<PulseInstance> = VecDeque::new();
+    let mut cycles: HashMap<usize, u64> = HashMap::new();
 
+    let mut pulse_queue: VecDeque<PulseInstance> = VecDeque::new();
     let button_push = PulseInstance {
         strength: Pulse::Low,
         source: button_id,
         dest: broadcast_id,
     };
+    let mut button_press: u64 = 0;
 
-    let mut high_pulse_count:u64 =0;
-    let mut low_pulse_count:u64 = 0;
-
-    // 59
-let mut button_press:u64 =0;
-
-
-
-'button: loop {
-        button_press +=1;
+    'button: loop {
+        button_press += 1;
         pulse_queue.push_front(button_push);
 
         while let Some(p) = pulse_queue.pop_front() {
-            match p.strength {
-                Pulse::High => {high_pulse_count +=1 }
-                Pulse::Low => { low_pulse_count +=1}
-            }
-
-
-            if p.dest==zg_i && p.strength==Pulse::High {
-                let t = p.source;
+            if p.dest == zg_i && p.strength == Pulse::High {
                 let u = button_press;
-                cycles.get_mut(&t).unwrap().push(u);
-                let mut cc =0;
-                for f in 0..zg_inputs.len() {
-                    let ff = zg_inputs[f];
-                    let tt = cycles[&ff].len();
-                    cc += tt;
-                }
-                if cc > 16 {
-                    println!("zg_hash:\n \t {:?}", cycles);
-                    for f in 0..zg_inputs.len() {
-                        let ff = zg_inputs[f];
-                        let tt = cycles[&ff].clone();
-                        print!{"_ {f:3}\t - "}
-                        advent_2023::list_displayables_to_string(&tt);
-                        println!();
-
-                        println!("\n ----------------------- \n");
-                    }
+                cycles.insert(p.source, u);
+                if cycles.len() == 4 {
                     break 'button;
                 }
             }
 
-            if zg_i == p.dest && p.strength == Pulse::High {
-                println!("    ---------------------------------------------");
-                            println!("button press: {button_press} ");
-                println!("pulse: {:?}", p);
-                println!("zg: {:?}", modules[zg_i]);
-
-            }
-            if p.dest == 59 && p.strength == Pulse::Low{
-                println!("button press number {}", button_press);
-                break 'button;
-            }
-
-            //println!("processing front of queue: \t {:?}", p);
-            let src_name = name_by_id[&p.source];
-            let dest_name = name_by_id[&p.dest];
-            //    println!("{src_name} {} > {dest_name}", p.strength);
-
             if output_modules.contains(&p.dest) {
-                let name = name_by_id[&p.dest];
-                //       println!("output {name} received pulse: {}", p.strength);
                 continue;
             }
 
-            let mut target_module = &mut modules[p.dest];
+            let target_module = &mut modules[p.dest];
             if let Module::EFlopFlop(ref mut ff) = target_module {
                 if p.strength == Pulse::Low {
                     if ff.on {
@@ -644,7 +520,7 @@ let mut button_press:u64 =0;
             }
             if let Module::EConjunction(ref mut c) = target_module {
                 c.state.insert(p.source, p.strength);
-                let t = c.state.iter().all(|(k, v)| *v == Pulse::High);
+                let t = c.state.iter().all(|(_, v)| *v == Pulse::High);
                 let out_pulse = if t {
                     Pulse::Low
                 } else {
@@ -679,31 +555,22 @@ let mut button_press:u64 =0;
                     pulse_queue.push_back(new_p);
                 }
             }
-            if zg_i == p.dest && p.strength == Pulse::High {
-                println!("zg: {:?}", modules[zg_i]);
-                println!("    ---------------------------------------------");
-            }
         }
-    //     println!("    ---------------------------------------------");
-
+    }
+    let mut c_vec: Vec<usize> = Vec::new();
+    for f in 0..zg_inputs.len() {
+        let ff = zg_inputs[f];
+        c_vec.push(cycles[&ff] as usize);
     }
 
-
-    let periods = [4057,3929,3907,3911];
-    let lv = advent_2023::lcm(&periods);
-    println!("lvm of peroids: {}", lv);
-    return lv.to_string();
-
-
-
-    println!();
-    println!("    ---------------------------------------------");
-    println!(" low  pulse count: {}", low_pulse_count);
-    println!(" high pulse count: {}", high_pulse_count);
-    let answer = high_pulse_count * low_pulse_count;
+    let answer = advent_2023::lcm(c_vec.as_slice());
     return answer.to_string();
 }
 
+
+const FLIP_FLOP_PREFIX: u8 = 37_u8;
+const CONJ_PREFIX: u8 = 38u8;
+const BROADCAST_PREFIX: u8 = 98_u8;
 fn trim_module_prefix(i_src: &str) -> &str {
     let mut src = i_src;
     if i_src.starts_with("%") {
