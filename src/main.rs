@@ -14,12 +14,13 @@ use std::time::Instant;
 
 /*
     Advent of Code 2023: Day 20
-        part1 answer:
+        part1 answer:   825896364
         part2 answer:
 
 */
 
-const ANSWER: (&str, &str) = ("3642", "608603023105276");
+const ANSWER: (&str, &str) = ("825896364", "608603023105276");
+static BUTTON_PRESS_COUNT:usize = 1000;
 
 fn main() {
     let _filename_test = "data/day20/test_input_01.txt";
@@ -31,7 +32,7 @@ fn main() {
     // println!("Advent of Code, Day 20");
     println!("    ---------------------------------------------");
     let start1 = Instant::now();
-    let answer1 = part1(_filename_test2);
+    let answer1 = part1(filename_part1);
     let duration1 = start1.elapsed();
 
     println!("\t Part 1: {:14} time: {:?}", answer1, duration1);
@@ -285,13 +286,18 @@ fn part1(input_file: &str) -> String {
     };
     //println!("pushing initial button press on queue");
 
+    let mut high_pulse_count:u64 =0;
+    let mut low_pulse_count:u64 = 0;
 
-    let button_press = 3;
 
-    for _ in 0..button_press {
+    for _ in 0..BUTTON_PRESS_COUNT{
         pulse_queue.push_front(button_push);
 
         while let Some(p) = pulse_queue.pop_front() {
+            match p.strength {
+                Pulse::High => {high_pulse_count +=1 }
+                Pulse::Low => { low_pulse_count +=1}
+            }
             //println!("processing front of queue: \t {:?}", p);
             let src_name = name_by_id[&p.source];
             let dest_name = name_by_id[&p.dest];
@@ -373,7 +379,9 @@ fn part1(input_file: &str) -> String {
 
     println!();
     println!("    ---------------------------------------------");
-    let answer = 0;
+    println!(" low  pulse count: {}", low_pulse_count);
+    println!(" high pulse count: {}", high_pulse_count);
+    let answer = high_pulse_count * low_pulse_count;
     return answer.to_string();
 }
 
