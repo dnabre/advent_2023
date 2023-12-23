@@ -98,7 +98,7 @@ struct FlipFlop {
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct Conjunction {
-    state: BTreeMap<usize,Pulse>,
+    state: BTreeMap<usize, Pulse>,
     inputs: Vec<usize>,
     output: Vec<usize>,
 }
@@ -132,8 +132,8 @@ fn part1(input_file: &str) -> String {
     let mut name_lookup: HashMap<&str, usize> = HashMap::new();
     let mut name_by_id: HashMap<usize, &str> = HashMap::new();
     let mut module_names: Vec<&str> = Vec::new();
-   // let mut output_modules: Vec<(&str, usize)> = Vec::new();
-    let mut output_modules:HashSet<usize> = HashSet::new();
+    // let mut output_modules: Vec<(&str, usize)> = Vec::new();
+    let mut output_modules: HashSet<usize> = HashSet::new();
     let mut m_broadcast_id: Option<usize> = None;
 
     let mut assign_id = 0;
@@ -243,7 +243,7 @@ fn part1(input_file: &str) -> String {
                 match &modules[j] {
                     Module::EFlopFlop(f) => {
                         if f.output.contains(&i) {
-                                c.inputs.push(j);
+                            c.inputs.push(j);
                             c.state.insert(j, Pulse::Low);
                         }
                     }
@@ -272,7 +272,7 @@ fn part1(input_file: &str) -> String {
     }
 
     for i in 0..modules.len() {
-  //    println!("{i:3} -> {:?}", modules[i]);
+        //    println!("{i:3} -> {:?}", modules[i]);
     }
 
 
@@ -283,93 +283,95 @@ fn part1(input_file: &str) -> String {
         source: button_id,
         dest: broadcast_id,
     };
-    pulse_queue.push_front(button_push);
+    //println!("pushing initial button press on queue");
 
 
-    while let Some(p) = pulse_queue.pop_front() {
-        let src_name = name_by_id[&p.source];
-        let dest_name = name_by_id[&p.dest];
-        println!("{src_name} {} > {dest_name}", p.strength);
+    let button_press = 3;
 
-        if output_modules.contains(&p.dest) {
-            let name = name_by_id[&p.dest];
-     //       println!("output {name} received pulse: {}", p.strength);
-            continue;
-        }
+    for _ in 0..button_press {
+        pulse_queue.push_front(button_push);
 
+        while let Some(p) = pulse_queue.pop_front() {
+            //println!("processing front of queue: \t {:?}", p);
+            let src_name = name_by_id[&p.source];
+            let dest_name = name_by_id[&p.dest];
+            println!("{src_name} {} > {dest_name}", p.strength);
 
-        println!("{src_name} {} > {dest_name}", p.strength);
-        let mut target_module = &mut modules[p.dest];
-        if let Module::EFlopFlop(ref mut ff) = target_module {
-            if p.strength == Pulse::Low {
-                if ff.on {
-                    ff.on = false;
-                    for d in &ff.output {
-                        let new_p = PulseInstance {
-                            strength: Pulse::Low,
-                            source: p.dest,
-                            dest: *d,
-                        };
-                        pulse_queue.push_back(new_p);
-                    }
+            if output_modules.contains(&p.dest) {
+                let name = name_by_id[&p.dest];
+                //       println!("output {name} received pulse: {}", p.strength);
+                continue;
+            }
 
-                } else {
-                    ff.on = true;
-                    for d in &ff.output {
-                        let new_p = PulseInstance {
-                            strength: Pulse::High,
-                            source: p.dest,
-                            dest: *d,
-                        };
-                        pulse_queue.push_back(new_p);
+            let mut target_module = &mut modules[p.dest];
+            if let Module::EFlopFlop(ref mut ff) = target_module {
+                if p.strength == Pulse::Low {
+                    if ff.on {
+                        ff.on = false;
+                        for d in &ff.output {
+                            let new_p = PulseInstance {
+                                strength: Pulse::Low,
+                                source: p.dest,
+                                dest: *d,
+                            };
+                            pulse_queue.push_back(new_p);
+                        }
+                    } else {
+                        ff.on = true;
+                        for d in &ff.output {
+                            let new_p = PulseInstance {
+                                strength: Pulse::High,
+                                source: p.dest,
+                                dest: *d,
+                            };
+                            pulse_queue.push_back(new_p);
+                        }
                     }
                 }
             }
-        }
-        if let Module::EConjunction(ref mut c) = target_module {
-            c.state.insert(p.source, p.strength);
-            let t = c.state.iter().all(|(k,v)| *v==Pulse::High);
-            let out_pulse =
-            if t {
-                Pulse::Low
-            } else {
-                Pulse::High
-            };
-            for d in &c.output {
-                let new_p = PulseInstance {
-                    strength: out_pulse,
-                    source: p.dest,
-                    dest: *d,
+            if let Module::EConjunction(ref mut c) = target_module {
+                c.state.insert(p.source, p.strength);
+                let t = c.state.iter().all(|(k, v)| *v == Pulse::High);
+                let out_pulse = if t {
+                    Pulse::Low
+                } else {
+                    Pulse::High
                 };
-                pulse_queue.push_back(new_p);
+                for d in &c.output {
+                    let new_p = PulseInstance {
+                        strength: out_pulse,
+                        source: p.dest,
+                        dest: *d,
+                    };
+                    pulse_queue.push_back(new_p);
+                }
+            }
+            if let Module::EBroadcaster(ref mut b) = target_module {
+                for d in &b.output {
+                    let new_p = PulseInstance {
+                        strength: p.strength,
+                        source: p.dest,
+                        dest: *d,
+                    };
+                    pulse_queue.push_back(new_p);
+                }
+            }
+            if let Module::EButton(ref mut b) = target_module {
+                for d in &b.output {
+                    let new_p = PulseInstance {
+                        strength: Pulse::Low,
+                        source: p.dest,
+                        dest: *d,
+                    };
+                    pulse_queue.push_back(new_p);
+                }
             }
         }
-        if let Module::EBroadcaster(ref mut b) = target_module {
-            for d in &b.output {
-                let new_p = PulseInstance {
-                    strength: p.strength,
-                    source: p.dest,
-                    dest: *d,
-                };
-                pulse_queue.push_back(new_p);
-            }
-        }
-        if let Module::EButton(ref mut b) = target_module {
-            for d in &b.output {
-                let new_p = PulseInstance {
-                    strength: Pulse::Low,
-                    source: p.dest,
-                    dest: *d,
-                };
-                pulse_queue.push_back(new_p);
-            }
-        }
-
+        println!("    ---------------------------------------------");
 
     }
 
-
-println!();
+    println!();
     println!("    ---------------------------------------------");
     let answer = 0;
     return answer.to_string();
