@@ -26,7 +26,7 @@ fn main() {
     let answer1 = part1(filename_part1);
     let duration1 = start1.elapsed();
 
-    println!("\t Part 1: {:14} time: {:?}", answer1, duration1);
+    println!("\t Part 1: {:15} time: {:?}", answer1, duration1);
     if ANSWER.0 != answer1 {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
@@ -35,7 +35,7 @@ fn main() {
     let answer2 = part2(filename_part2);
     let duration2 = start2.elapsed();
 
-    println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
+    println!("\t Part 2: {:15} time: {:?}", answer2, duration2);
     if ANSWER.1 != answer2 {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
     }
