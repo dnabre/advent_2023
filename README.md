@@ -30,6 +30,6 @@
 | [Day 22: Sand Slabs](https://adventofcode.com/2023/day/22)                     | 3d grid sim         | * | * |
 | [Day 23: A Long Walk](https://adventofcode.com/2023/day/23)                    | graph search        | _ | _ |
 | [Day 24: Never Tell Me The Odds ](https://adventofcode.com/2023/day/24)                               | graph search        | _ | _ |
-| [Day 25: Snowverload](https://adventofcode.com/2023/day/25)                               | graph search        | _ | _ |
+| [Day 25: Snowverload](https://adventofcode.com/2023/day/25)                               | graph search        | * | _ |
 
 Still learning Rust as I go, so this code will likely be messy and non-idiomatic. Not recommended as good examples of the language.
