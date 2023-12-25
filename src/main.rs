@@ -184,6 +184,22 @@ fn xy_cross((pos1,vel1): (Vector3, Vector3), (pos2,vel2): (Vector3, Vector3), ar
 fn part2(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
 
+    //unknowns initial pos and speed
+
+    let lines = advent_2023::file_to_lines(input_file);
+
+    let mut pos:Vec<Vector3> = Vec::new();
+    let mut vel:Vec<Vector3> = Vec::new();
+
+    let mut hail_stones = Vec::new();
+
+    let number = lines.len();
+    for i in 0..number{
+        let l = &lines[i];
+        let (mut p,mut v) = parse_line(l);
+        hail_stones.push((p,v));
+    }
+
 
 
 
