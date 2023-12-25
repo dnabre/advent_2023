@@ -5,10 +5,13 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_code)]
 
+use std::num::TryFromIntError;
+
 use std::collections::{BTreeSet, HashSet};
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
 use std::time::Instant;
+use prime_factorization::Factorization;
 
 /*
     Advent of Code 2023: Day 24
@@ -36,14 +39,14 @@ fn main() {
         println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
     }
 
-    // let start2 = Instant::now();
-    // let answer2 = part2(_filename_test2);
-    // let duration2 = start2.elapsed();
-    //
-    // println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
-    // if ANSWER.1 != answer2 {
-    //     println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
-    // }
+    let start2 = Instant::now();
+    let answer2 = part2(filename_part2);
+    let duration2 = start2.elapsed();
+
+    println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
+    if ANSWER.1 != answer2 {
+        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
+    }
     println!("    ---------------------------------------------");
 }
 
@@ -199,8 +202,21 @@ fn part2(input_file: &str) -> String {
         let (mut p,mut v) = parse_line(l);
         hail_stones.push((p,v));
     }
+    println!("---------------------------------------");
+    for i in 0..number    {
+
+        let (p,v) = hail_stones[i];
+        print!("hs[{i:3}].v.x : ");
+        output_factors(v.x );
+        print!("hs[{i:3}].v.y : ");
+        output_factors(v.y );
+        print!("hs[{i:3}].v.z : ");
+        output_factors(v.z );
 
 
+    }
+
+    println!("---------------------------------------");
 
 
 
@@ -209,5 +225,22 @@ fn part2(input_file: &str) -> String {
     let answer = 0;
     return answer.to_string();
 }
+
+
+fn output_factors(n:i128) {
+    let q :Result<u128,TryFromIntError> = n.try_into();
+    match q {
+        Ok(q) => {
+            let f = Factorization::<u128>::run(q);
+
+            println!("{} -> {:?}", n, f.factors);
+        }
+        Err(_) => {println!();}
+    }
+
+
+    }
+
+
 
 
