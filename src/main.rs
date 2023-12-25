@@ -5,13 +5,14 @@
 #![allow(unused_assignments)]
 #![allow(unreachable_code)]
 
-use std::num::TryFromIntError;
+
 
 use std::collections::{BTreeSet, HashSet};
+use std::f64::{MAX, MIN};
 use std::fmt::{Display, Formatter};
 use std::hash::Hash;
 use std::time::Instant;
-use prime_factorization::Factorization;
+
 
 /*
     Advent of Code 2023: Day 24
@@ -49,6 +50,96 @@ fn main() {
     }
     println!("    ---------------------------------------------");
 }
+
+#[derive(Debug, Clone, Copy)]
+struct Point {
+    x: f64,
+    y: f64,
+    z: f64,
+}
+impl From<&str> for Point {
+    fn from(input: &str) -> Self {
+        // We just split by comma, but we also trim because of extra
+        // whitespace in the input.
+        let mut split = input.split(", ");
+        let x = split.next().unwrap().trim().parse().unwrap();
+        let y = split.next().unwrap().trim().parse().unwrap();
+        let z = split.next().unwrap().trim().parse().unwrap();
+        Self { x, y, z }
+    }
+}
+
+
+#[derive(Debug,  Clone, Copy)]
+struct HailStone {
+    position: Point,
+    velocity: Point,
+}
+
+impl From<&str> for HailStone {
+    fn from(input: &str) -> Self {
+        // We can just split by the @ symbol.
+        let mut split = input.split(" @ ");
+        let position = split.next().unwrap().into();
+        let velocity = split.next().unwrap().into();
+        Self { position, velocity }
+    }
+}
+
+// Our intersect_xy will return this. It's possible they are the same
+// line and as such they intersect at all points.
+enum Intersection {
+    Point(Point),
+    All,
+}
+
+
+impl HailStone {
+    fn intersection_xy(&self, other: &HailStone) -> Option<Intersection> {
+        // This is all based off of solving y = mx + b for two
+        // lines. We first need to find the lines and then solve for
+        // where they intersect.
+
+        // Calculate the slope and intercept for each vector.
+        let slope_self = self.velocity.y / self.velocity.x;
+        let slope_other = other.velocity.y / other.velocity.x;
+        let intercept_self = self.position.y - slope_self * self.position.x;
+        let intercept_other = other.position.y - slope_other * other.position.x;
+
+        // If they are the same line, then they always
+        // intersect. Otherwise, if the slopes are the same, then they
+        // never intersect because they are parallel.
+        if slope_self == slope_other && intercept_self == intercept_other {
+            return Some(Intersection::All);
+        } else if slope_self == slope_other {
+            return None;
+        }
+
+        // Solve for x and y.
+        let x = (intercept_other - intercept_self) / (slope_self - slope_other);
+        let y = slope_self * x + intercept_self;
+        Some(Intersection::Point(Point { x, y, z: 0.0 }))
+    }
+
+    fn in_past_xy(&self, point: &Point) -> bool {
+        // We want to check if the point of intersection would be in
+        // the past. The simplest way to do this is to figure out the
+        // number of steps to get to the point and make sure it's not
+        // negative.
+        let x = point.x - self.position.x;
+        let y = point.y - self.position.y;
+
+        let x = x / self.velocity.x;
+        let y = y / self.velocity.y;
+
+        x < 0.0 && y < 0.0
+    }
+}
+
+
+
+
+
 
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
@@ -108,6 +199,7 @@ fn parse_line(input: &String) -> (Vector3, Vector3) {
 }
 
 const PART1_XY_BOUNDS:(i128,i128) = (200000000000000, 400000000000000);
+
 
 fn part1(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
@@ -184,6 +276,17 @@ fn xy_cross((pos1,vel1): (Vector3, Vector3), (pos2,vel2): (Vector3, Vector3), ar
 
 
 
+
+fn intersects(
+    (pos1,vel1):(Vector3,Vector3), (pos2,vel2):(Vector3,Vector3)) ->Option <(f64,f64)>
+{
+
+
+return None;
+}
+
+
+
 fn part2(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
 
@@ -202,21 +305,11 @@ fn part2(input_file: &str) -> String {
         let (mut p,mut v) = parse_line(l);
         hail_stones.push((p,v));
     }
-    println!("---------------------------------------");
-    for i in 0..number    {
-
-        let (p,v) = hail_stones[i];
-        print!("hs[{i:3}].v.x : ");
-        output_factors(v.x );
-        print!("hs[{i:3}].v.y : ");
-        output_factors(v.y );
-        print!("hs[{i:3}].v.z : ");
-        output_factors(v.z );
 
 
-    }
 
-    println!("---------------------------------------");
+
+
 
 
 
@@ -225,22 +318,6 @@ fn part2(input_file: &str) -> String {
     let answer = 0;
     return answer.to_string();
 }
-
-
-fn output_factors(n:i128) {
-    let q :Result<u128,TryFromIntError> = n.try_into();
-    match q {
-        Ok(q) => {
-            let f = Factorization::<u128>::run(q);
-
-            println!("{} -> {:?}", n, f.factors);
-        }
-        Err(_) => {println!();}
-    }
-
-
-    }
-
 
 
 
