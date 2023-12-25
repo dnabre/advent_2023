@@ -7,9 +7,10 @@
 
 use std::collections::{BTreeSet, HashSet};
 use std::hash::Hash;
-use std::time::Instant;
+use std::ops::Range;
+use std::time::{Instant, SystemTime};
 
-use rand::Rng;
+
 
 /*
     Advent of Code 2023: Day 25
@@ -60,18 +61,31 @@ type V = HashSet<String>;
 type E = Vec<(String, String)>;
 
 
+fn get_random(seed:&mut u128, range:Range<usize> ) -> usize{
+    const M: u128= 9223372036854775808u128;
+    const A: u128 = 1103515245u128;
+    const C: u128 = 12345u128;
+
+    *seed = (A * *seed  + C) % M;
+    let b = range.end - range.start;
+    let offset = (*seed % b as u128) as usize;
+    return range.start + offset;
+}
+
 fn part1(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
 
     let (vertices, edges) = parse_input(&lines);
 
-    let mut rng = rand::thread_rng();
+
+    let mut prng_seed =SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos();
+
 
     loop {
         let mut vertices = vertices.clone();
         let mut edges = edges.clone();
         while vertices.len() > 2 {
-            let i = rng.gen_range(0..edges.len());
+            let i = get_random(&mut prng_seed, (0..edges.len()));
             let (v1, v2) = edges[i].clone();
 
             edges.swap_remove(i);
