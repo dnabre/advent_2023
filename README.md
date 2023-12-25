@@ -27,7 +27,7 @@
 | [Day 19: Aplenty](https://adventofcode.com/2023/day/19)                        | parsing             | * | * |
 | [Day 20: Pulse Propagation](https://adventofcode.com/2023/day/20)              | circuit sim         | * | * |
 | [Day 21: Step Counter](https://adventofcode.com/2023/day/21)                   | matrix and search   | * | * |
-| [Day 22: Sand Slabs](https://adventofcode.com/2023/day/22)                     | 3d grid sim         | _ | _ |
+| [Day 22: Sand Slabs](https://adventofcode.com/2023/day/22)                     | 3d grid sim         | * | * |
 | [Day 23: A Long Walk](https://adventofcode.com/2023/day/23)                    | graph search        | _ | _ |
 | [Day 24: Never Tell Me The Odds ](https://adventofcode.com/2023/day/24)                               | graph search        | _ | _ |
 | [Day 25: Snowverload](https://adventofcode.com/2023/day/25)                               | graph search        | _ | _ |
