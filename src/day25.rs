@@ -1,16 +1,7 @@
-// #![allow(unused_variables)]
-// #![allow(unused_imports)]
-// #![allow(unused_mut)]
-// #![allow(dead_code)]
-// #![allow(unused_assignments)]
-// #![allow(unreachable_code)]
-
 use std::collections::{BTreeSet, HashSet};
 use std::hash::Hash;
 use std::ops::Range;
 use std::time::{Instant, SystemTime};
-
-
 
 /*
     Advent of Code 2023: Day 25
@@ -18,14 +9,13 @@ use std::time::{Instant, SystemTime};
         part2 answer:
 
 */
-const ANSWER: (&str, &str) = ("514786", "74594");
+const ANSWER: (&str, &str) = ("514786", "Button Pressed");
 
 fn main() {
     let _filename_test = "data/day25/test_input_01.txt";
     let _filename_test2 = "data/day25/test_input_02.txt";
 
     let filename_part1 = "data/day25/part1_input.txt";
-    let filename_part2 = "data/day25/part2_input.txt";
 
     println!("Advent of Code, Day 25");
     println!("    ---------------------------------------------");
@@ -35,16 +25,22 @@ fn main() {
 
     println!("\t Part 1: {:14} time: {:?}", answer1, duration1);
     if ANSWER.0 != answer1 {
-        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer1, ANSWER.0);
+        println!(
+            "\t\t ERROR: Answer is WRONG. Got: {}, Expected {}",
+            answer1, ANSWER.0
+        );
     }
 
     let start2 = Instant::now();
-    let answer2 = part2(filename_part2);
+    let answer2 = part2();
     let duration2 = start2.elapsed();
 
     println!("\t Part 2: {:14} time: {:?}", answer2, duration2);
     if ANSWER.1 != answer2 {
-        println!("\t\t ERROR: Answer is WRONG. Got: {}, Expected {}", answer2, ANSWER.1);
+        println!(
+            "\t\t ERROR: Answer is WRONG. Got: {}, Expected {}",
+            answer2, ANSWER.1
+        );
     }
     println!("    ---------------------------------------------");
 }
@@ -55,18 +51,16 @@ struct Node {
     adjacent: BTreeSet<usize>,
 }
 
-
 type Graph = (V, E);
 type V = HashSet<String>;
 type E = Vec<(String, String)>;
 
-
-fn get_random(seed:&mut u128, range:Range<usize> ) -> usize{
-    const M: u128= 9223372036854775808u128;
+fn get_random(seed: &mut u128, range: Range<usize>) -> usize {
+    const M: u128 = 9223372036854775808u128;
     const A: u128 = 1103515245u128;
     const C: u128 = 12345u128;
 
-    *seed = (A * *seed  + C) % M;
+    *seed = (A * *seed + C) % M;
     let b = range.end - range.start;
     let offset = (*seed % b as u128) as usize;
     return range.start + offset;
@@ -77,15 +71,16 @@ fn part1(input_file: &str) -> String {
 
     let (vertices, edges) = parse_input(&lines);
 
-
-    let mut prng_seed =SystemTime::now().duration_since(SystemTime::UNIX_EPOCH).unwrap().as_nanos();
-
+    let mut prng_seed = SystemTime::now()
+        .duration_since(SystemTime::UNIX_EPOCH)
+        .unwrap()
+        .as_nanos();
 
     loop {
         let mut vertices = vertices.clone();
         let mut edges = edges.clone();
         while vertices.len() > 2 {
-            let i = get_random(&mut prng_seed, (0..edges.len()));
+            let i = get_random(&mut prng_seed, 0..edges.len());
             let (v1, v2) = edges[i].clone();
 
             edges.swap_remove(i);
@@ -114,11 +109,14 @@ fn part1(input_file: &str) -> String {
             }
         }
         if edges.len() == 3 {
-            return vertices.iter().map(|s| s.split(':').count()).product::<usize>().to_string();
+            return vertices
+                .iter()
+                .map(|s| s.split(':').count())
+                .product::<usize>()
+                .to_string();
         }
     }
 }
-
 
 fn parse_input(lines: &Vec<String>) -> Graph {
     let n = lines.len();
@@ -137,12 +135,7 @@ fn parse_input(lines: &Vec<String>) -> Graph {
     return (vertices, edges);
 }
 
-
-fn part2(input_file: &str) -> String {
-    let lines = advent_2023::file_to_lines(input_file);
-
-    let answer = 0;
+fn part2() -> String {
+    let answer = "Button Pressed";
     return answer.to_string();
 }
-
-
