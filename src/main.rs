@@ -48,7 +48,6 @@ struct Coord {
     row: usize,
     col: usize,
 }
-
 impl Coord {
     fn neighbors(&self, grid: &Vec<Vec<Tile>>) -> Vec<Coord> {
         let mut res = Vec::new();
@@ -121,30 +120,51 @@ impl Coord {
 
         return res;
     }
-}
+    fn neighbours2(self, grid: &Vec<Vec<Tile>>) -> impl Iterator<Item=Self> + '_ {
+        let rows = grid.len();
+        let cols = grid[0].len();
 
+        let up = if self.row > 0 {
+            Some(Self {
+                row: self.row - 1,
+                col: self.col,
+            })
+        } else {
+            None
+        };
 
-fn longest(from: Coord, to: Coord, grid: &HashMap<Coord, HashMap<Coord, usize>>) -> usize {
-    let mut q = VecDeque::new();
-    let mut max = 0;
+        let down = if self.row < rows - 1 {
+            Some(Self {
+                row: self.row + 1,
+                col: self.col,
+            })
+        } else {
+            None
+        };
 
-    q.push_back((from, 0, HashSet::from([from])));
+        let left = if self.col > 0 {
+            Some(Self {
+                row: self.row,
+                col: self.col - 1,
+            })
+        } else {
+            None
+        };
 
-    while let Some((pos, cost, seen)) = q.pop_front() {
-        if pos == to {
-            max = cost.max(max);
-            continue;
-        }
+        let right = if self.col < cols - 1 {
+            Some(Self {
+                row: self.row,
+                col: self.col + 1,
+            })
+        } else {
+            None
+        };
 
-        for (n, add) in grid.get(&pos).unwrap().iter().filter(|(pos, _)| !seen.contains(pos)) {
-            let mut new_seen = seen.clone();
-            new_seen.insert(*n);
-            q.push_back((*n, cost + add, new_seen))
-        }
+        [up, down, left, right].into_iter().filter_map(|pos| pos).filter(|pos| grid[pos.row][pos.col] != Tile::Rock)
     }
-
-    max
 }
+
+
 
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
@@ -220,18 +240,6 @@ fn part1(input_file: &str) -> String {
     return answer.to_string();
 }
 
-fn parse_tile(ch: char) -> Tile {
-    match ch {
-        '.' => Tile::Open,
-        '#' => Tile::Rock,
-        '^' => Tile::Slope(Direction::Up),
-        'v' => Tile::Slope(Direction::Down),
-        '<' => Tile::Slope(Direction::Left),
-        '>' => Tile::Slope(Direction::Right),
-        x => panic!("bad tile: {}", x),
-    }
-}
-
 fn part2(input_file: &str) -> String {
     let lines = advent_2023::file_to_lines(input_file);
     let grid = parse_grid(&lines);
@@ -261,51 +269,6 @@ fn part2(input_file: &str) -> String {
     return longest(start, end, &costmap).to_string();
 }
 
-
-impl Coord {
-    fn neighbours2(self, grid: &Vec<Vec<Tile>>) -> impl Iterator<Item=Self> + '_ {
-        let rows = grid.len();
-        let cols = grid[0].len();
-
-        let up = if self.row > 0 {
-            Some(Self {
-                row: self.row - 1,
-                col: self.col,
-            })
-        } else {
-            None
-        };
-
-        let down = if self.row < rows - 1 {
-            Some(Self {
-                row: self.row + 1,
-                col: self.col,
-            })
-        } else {
-            None
-        };
-
-        let left = if self.col > 0 {
-            Some(Self {
-                row: self.row,
-                col: self.col - 1,
-            })
-        } else {
-            None
-        };
-
-        let right = if self.col < cols - 1 {
-            Some(Self {
-                row: self.row,
-                col: self.col + 1,
-            })
-        } else {
-            None
-        };
-
-        [up, down, left, right].into_iter().filter_map(|pos| pos).filter(|pos| grid[pos.row][pos.col] != Tile::Rock)
-    }
-}
 
 
 fn all_forks(grid: &Vec<Vec<Tile>>) -> HashSet<Coord> {
@@ -346,5 +309,36 @@ fn costmap(points: &HashSet<Coord>, grid: &Vec<Vec<Tile>>) -> HashMap<Coord, Has
     })
 }
 
+fn longest(from: Coord, to: Coord, grid: &HashMap<Coord, HashMap<Coord, usize>>) -> usize {
+    let mut q = VecDeque::new();
+    let mut max = 0;
 
+    q.push_back((from, 0, HashSet::from([from])));
 
+    while let Some((pos, cost, seen)) = q.pop_front() {
+        if pos == to {
+            max = cost.max(max);
+            continue;
+        }
+
+        for (n, add) in grid.get(&pos).unwrap().iter().filter(|(pos, _)| !seen.contains(pos)) {
+            let mut new_seen = seen.clone();
+            new_seen.insert(*n);
+            q.push_back((*n, cost + add, new_seen))
+        }
+    }
+
+    max
+}
+
+fn parse_tile(ch: char) -> Tile {
+    match ch {
+        '.' => Tile::Open,
+        '#' => Tile::Rock,
+        '^' => Tile::Slope(Direction::Up),
+        'v' => Tile::Slope(Direction::Down),
+        '<' => Tile::Slope(Direction::Left),
+        '>' => Tile::Slope(Direction::Right),
+        x => panic!("bad tile: {}", x),
+    }
+}
