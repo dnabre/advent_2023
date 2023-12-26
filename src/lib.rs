@@ -20,7 +20,6 @@ pub fn file_to_lines(input_file: &str) -> Vec<String> {
     return lines;
 }
 
-
 pub fn file_to_single_line(input_file: &str, merge_on: Option<char>) -> String {
     let file = File::open(input_file).expect(&*format!("error opening file {}", input_file));
     let bfile = BufReader::new(file);
@@ -33,7 +32,9 @@ pub fn file_to_single_line(input_file: &str, merge_on: Option<char>) -> String {
             sb.push_str(lines[i].as_str());
             match merge_on {
                 None => {}
-                Some(ch) => { sb.push(ch); }
+                Some(ch) => {
+                    sb.push(ch);
+                }
             }
         }
         sb.push_str(lines.last().unwrap().as_str());
@@ -84,20 +85,25 @@ pub fn get_neighbor_points((x, y): (i32, i32), diag: bool) -> Vec<(i32, i32)> {
     return neighs;
 }
 
-pub static CARD_DELTA: [(i32, i32); 4] = [ (-1, 0), (0, -1),(0, 1), (1, 0)];
+pub static CARD_DELTA: [(i32, i32); 4] = [(-1, 0), (0, -1), (0, 1), (1, 0)];
 pub static DIAG_DELTA: [(i32, i32); 4] = [(-1, -1), (-1, 1), (1, -1), (1, 1)];
 
-pub fn checked_neighbor_points((x, y): (usize, usize), n_rows:usize, n_cols:usize, diag: bool) -> Vec<(usize, usize)> {
+pub fn checked_neighbor_points(
+    (x, y): (usize, usize),
+    n_rows: usize,
+    n_cols: usize,
+    diag: bool,
+) -> Vec<(usize, usize)> {
     let r = y;
     let c = x;
 
     let mut neighs: Vec<(usize, usize)> = Vec::new();
     for i in 0..CARD_DELTA.len() {
         let (dr, dc) = CARD_DELTA[i];
-        let f1:i32 = (c as i32) + dc;
-        let f2:i32 = (r as i32)  + dr;
+        let f1: i32 = (c as i32) + dc;
+        let f2: i32 = (r as i32) + dr;
 
-        if (f1 <0) || (f1 >= n_cols as i32) || (f2 <0) || (f2 >= n_rows as i32) {
+        if (f1 < 0) || (f1 >= n_cols as i32) || (f2 < 0) || (f2 >= n_rows as i32) {
             continue;
         } else {
             neighs.push((f1 as usize, f2 as usize));
@@ -106,10 +112,10 @@ pub fn checked_neighbor_points((x, y): (usize, usize), n_rows:usize, n_cols:usiz
     if diag {
         for i in 0..DIAG_DELTA.len() {
             let (dr, dc) = DIAG_DELTA[i];
-            let f1:i32 = (c as i32) + dc;
-            let f2:i32 = (r as i32)  + dr;
+            let f1: i32 = (c as i32) + dc;
+            let f2: i32 = (r as i32) + dr;
 
-            if (f1 <0) || (f1 >= n_cols as i32) || (f2 <0) || (f2 >= n_rows as i32) {
+            if (f1 < 0) || (f1 >= n_cols as i32) || (f2 < 0) || (f2 >= n_rows as i32) {
                 continue;
             } else {
                 neighs.push((f1 as usize, f2 as usize));
@@ -120,8 +126,6 @@ pub fn checked_neighbor_points((x, y): (usize, usize), n_rows:usize, n_cols:usiz
 
     return neighs;
 }
-
-
 
 pub fn group_newline_separated_lines(lines: &Vec<String>) -> Vec<String> {
     let mut group_vec: Vec<String> = Vec::new();
@@ -174,22 +178,29 @@ pub fn list_to_pairs<T: Copy>(galaxy_list: Vec<(T, T)>) -> Vec<((T, T), (T, T))>
 
 pub fn parse_number_list_comma<T: FromStr>(number_string: &str) -> Vec<T> {
     let oo = number_string.split(",").map(|s| s.trim().parse());
-    let un_oo: Vec<T> = oo.map(|r| match r {
-        Ok(n) => { n }
-        Err(_) => { panic!("Error parsing") }
-    }).collect();
+    let un_oo: Vec<T> = oo
+        .map(|r| match r {
+            Ok(n) => n,
+            Err(_) => {
+                panic!("Error parsing")
+            }
+        })
+        .collect();
     return un_oo;
 }
 
 pub fn parse_number_list_whitespace<T: FromStr>(number_string: &str) -> Vec<T> {
     let oo = number_string.split_whitespace().map(|s| s.trim().parse());
-    let un_oo: Vec<T> = oo.map(|r| match r {
-        Ok(n) => { n }
-        Err(_) => { panic!("Error parsing") }
-    }).collect();
+    let un_oo: Vec<T> = oo
+        .map(|r| match r {
+            Ok(n) => n,
+            Err(_) => {
+                panic!("Error parsing")
+            }
+        })
+        .collect();
     return un_oo;
 }
-
 
 pub fn str_to_char_vec(s: &str) -> Vec<char> {
     let mut r_vec: Vec<char> = Vec::with_capacity(s.len());
@@ -207,7 +218,12 @@ pub enum Direction {
     Left,
     Right,
 }
-pub const  DIRECTION_ARRAY: [Direction; 4] = [Direction::Up, Direction::Down, Direction::Left, Direction::Right];
+pub const DIRECTION_ARRAY: [Direction; 4] = [
+    Direction::Up,
+    Direction::Down,
+    Direction::Left,
+    Direction::Right,
+];
 
 impl Direction {
     pub fn opposite(&self) -> Self {
@@ -228,68 +244,66 @@ pub enum Compass {
     East,
 }
 impl Compass {
-
     pub fn opposite(dir: Compass) -> Compass {
         match dir {
-            Compass::North => {Compass::South}
-            Compass::South => {Compass::North}
-            Compass::West => {Compass::East}
-            Compass::East => {Compass::West}
+            Compass::North => Compass::South,
+            Compass::South => Compass::North,
+            Compass::West => Compass::East,
+            Compass::East => Compass::West,
         }
-}
+    }
 
-    pub fn progress((x,y):(usize,usize), dir:Compass, (max_rows,max_cols): (usize,usize)) -> Option<(usize,usize)> {
-
-
+    pub fn progress(
+        (x, y): (usize, usize),
+        dir: Compass,
+        (max_rows, max_cols): (usize, usize),
+    ) -> Option<(usize, usize)> {
         match dir {
-            Compass::North
-                    if y > 0  => { return Some((x,y-1));}
-            Compass::South if y +1 < max_rows   => { return Some((x,y+1));}
-            Compass::West if x > 0 => { return Some((x-1, y));}
-            Compass::East if x + 1 < max_cols => {return Some((x+1,y));}
-            _ => {return None; }
+            Compass::North if y > 0 => {
+                return Some((x, y - 1));
+            }
+            Compass::South if y + 1 < max_rows => {
+                return Some((x, y + 1));
+            }
+            Compass::West if x > 0 => {
+                return Some((x - 1, y));
+            }
+            Compass::East if x + 1 < max_cols => {
+                return Some((x + 1, y));
+            }
+            _ => {
+                return None;
+            }
         };
     }
 
-
     pub fn turn_to(dir: Compass, turn_to: ForwardDirection) -> Compass {
         match turn_to {
-            ForwardDirection::Straight => { dir }
-            ForwardDirection::Left => {
-                match dir {
-                    Compass::North => { Compass::West }
-                    Compass::South => { Compass::East }
-                    Compass::West => { Compass::South }
-                    Compass::East => { Compass::North }
-                }
-            }
-            ForwardDirection::Right => {
-                match dir {
-                    Compass::North => { Compass::East }
-                    Compass::South => { Compass::West }
-                    Compass::West => { Compass::North }
-                    Compass::East => { Compass::South }
-                }
-            }
-            ForwardDirection::Back => {
-                Compass::opposite(dir)
-            }
+            ForwardDirection::Straight => dir,
+            ForwardDirection::Left => match dir {
+                Compass::North => Compass::West,
+                Compass::South => Compass::East,
+                Compass::West => Compass::South,
+                Compass::East => Compass::North,
+            },
+            ForwardDirection::Right => match dir {
+                Compass::North => Compass::East,
+                Compass::South => Compass::West,
+                Compass::West => Compass::North,
+                Compass::East => Compass::South,
+            },
+            ForwardDirection::Back => Compass::opposite(dir),
         }
     }
 }
-
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
 pub enum ForwardDirection {
     Straight,
     Left,
     Right,
-    Back
+    Back,
 }
-
-
-
-
 
 pub fn compare_grid<T: Display>(g1: &Vec<Vec<T>>, g2: &Vec<Vec<T>>) -> () {
     for y in 0..g1.len() {
@@ -327,26 +341,23 @@ pub fn print_grid<T: std::fmt::Display>(grid: &Vec<Vec<T>>) -> () {
     }
 
     for y in 0..grid.len() {
-        for x in 0..grid[0].len()-1 {
+        for x in 0..grid[0].len() - 1 {
             print!("{} ", grid[y][x]);
         }
         println!("{}", grid[y].last().unwrap());
-
-
     }
 }
 
 pub fn parse_grid(lines: &Vec<String>) -> Vec<Vec<char>> {
     let mut grid: Vec<Vec<char>> = Vec::new();
-    for l in lines
-    {
+    for l in lines {
         let line = str_to_char_vec(l);
         grid.push(line);
     }
     grid
 }
 
-pub fn convert_grid_using<T: Copy,O>(grid: &Vec<Vec<T>>, convert: fn(T) -> O) -> Vec<Vec<O>> {
+pub fn convert_grid_using<T: Copy, O>(grid: &Vec<Vec<T>>, convert: fn(T) -> O) -> Vec<Vec<O>> {
     let mut o_grid = Vec::with_capacity(grid.len());
     for row in grid {
         let mut grid_row: Vec<O> = Vec::with_capacity(row.len());
@@ -361,20 +372,19 @@ pub fn convert_grid_using<T: Copy,O>(grid: &Vec<Vec<T>>, convert: fn(T) -> O) ->
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 pub struct Coord {
     pub x: i64,
-    pub y: i64
+    pub y: i64,
 }
 
-pub fn list_displayables_to_string<T:Display>(parts:&Vec<T>) -> String{
+pub fn list_displayables_to_string<T: Display>(parts: &Vec<T>) -> String {
     let mut sb = String::new();
     if parts.len() == 1 {
         return format!("[{}]", parts[0]);
     }
     sb.push('[');
-    for i in 0..parts.len()-1 {
+    for i in 0..parts.len() - 1 {
         sb.push_str(format!("{}, ", parts[i]).as_str());
     }
     sb.push_str(format!("{}]", parts.last().unwrap()).as_str());
 
     return sb.to_string();
-
 }
